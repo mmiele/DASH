@@ -43,7 +43,7 @@ last update: 03/10/2022
 
 ## Introduction
 
-![dash-words-cloud](../images/general/dash-words-cloud.png)
+![dash-words-cloud](images/architecture/dash-words-cloud.png)
 
 ### Objectives
 The overall objective is to **optimize network SMART Programmable Technologies performance**, and **leverage commodity hardware technology** to achieve **10x or even 100x stateful connection performance**.
