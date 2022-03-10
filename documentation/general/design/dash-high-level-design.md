@@ -157,6 +157,7 @@ In some cases, DPUs might provide separate management Ethernet ports, or PCIe ne
 ![dash-appliance-architecture](images/dash-appliance-architecture.svg)
 
 ### DASH smart switch architecture
+
 A DASH "Smart Switch" is a merging of a datacenter switch and one or more DPUs into an integrated device. The "front-panel" network interfaces of the DPU(s) are wired directly into the switching fabric instead of being presented externally, saving cabling, electronics, space and power. There can also be some consolidation of software stacks, for example see [SONiC Multi-ASIC](https://github.com/Azure/SONiC/blob/master/doc/multi_asic/SONiC_multi_asic_hld.md) for how this is accomplished in standard SONiC multi-ASIC devices.
 #### High level architecture
 

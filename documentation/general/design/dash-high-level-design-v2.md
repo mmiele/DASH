@@ -33,9 +33,11 @@ last update: 03/10/2022
     - [Behavioral model](#behavioral-model)
   - [Test](#test)
 - [Appendix](#appendix)
-  - [Single DPU on NIC](#single-dpu-on-nic)
-  - [Appliance](#appliance)
-  - [Smart switch](#smart-switch)
+  - [DASH single DPU on NIC](#dash-single-dpu-on-nic)
+  - [DASH appliance](#dash-appliance)
+    - [DASH appliance high level architecture](#dash-appliance-high-level-architecture)
+    - [DASH appliance low level architecture](#dash-appliance-low-level-architecture)
+  - [DASH Smart switch](#dash-smart-switch)
   - [A day in the life of a DASH packet](#a-day-in-the-life-of-a-dash-packet)
   - [A day in the life of a DASH SDN controller](#a-day-in-the-life-of-a-dash-sdn-controller)
   - [A day in the life of a DASH container](#a-day-in-the-life-of-a-dash-container)
@@ -145,11 +147,31 @@ These comprise the main dataplane engines and are the core of what are variously
 
 ## SONiC integration
 
-This is what Prince is doing. For us it is important to capture how SONiC is modified to accomodate DASH. We'll to the related SONiC docs when needed. I put all the varaitions in the appendix so we do not clutter the flow of essential info. 
+The system architecture for SONiC-DASH relies upon the [SONiC system architecture](https://github.com/Azure/SONiC/wiki/Architecture), as shown in the following figure.
 
 ![dash-high-level-design](images/architecture/dash-high-level-design.svg)
 
 <figcaption><i>Figure 2 - SONiC integration</i></figcaption>
+
+This architecture introduces the following DASH modifications:
+
+1. A *new docker container* in the user space named **dash container** to create the functional component for DASH.
+
+1. In the **sync-d container**, the **sai api DASH** (as opposed to *sai api* in the original SONiC architecture).  
+
+The *DPU/IPU/SmartNic* hardware will run a separate instance of SONiC-DASH on the hardware.  
+
+The component interactions will be executed as a new user space container implementation; relying on the existing SONiC infrastructure and components to interact as they normally would.  
+
+The functionality of the new *dash container* in the user space is to receive content from the Software Defined Networking (SDN) controller to control setup for the overlay configurations. DASH receives the objects, translates them with a **gNMI agent**, provides them to the *SONiC OrchAgent* for further translation onto the dataplane via the **SAI database**. 
+
+Note the following:
+
+- **DASH API** shall be exposed as gNMI interface as part of the SONiC gNMI container. 
+- **DASH clients** shall configure SONiC via gRPC get/set calls. 
+- **gNMI container** has the config backend to translate/write  DASH objects to CONFDB and/or APPDB.
+- **SWSS** (Underlay) for DASH shall have a small initialization and shall support a defined set of SAI APIs.
+- **DashOrch** (DASH orchestration agent) (Overlay) in the SWSS container subscribes to the DB objects programmed by the DASH agent. These objects are not expected to be programmed to kernel, so orchestration agent writes to ASICDB for the DASH technology provider SAI implementation to finally program the DPU. The DASH orchestration agent shall write the state of each tables to STATEDB used by the applications to fetch the programmed status of DASH configured objects. 
 
 ## Physical architecture  
 
@@ -177,20 +199,40 @@ We just capture the gist of it and then we link to the related Sirius pipeline A
 #### Behavioral model
 
 
-
 ### Test
 
 We just capture the gist of it and then we link to the related test area. 
 
 ## Appendix
 
-### Single DPU on NIC
+### DASH single DPU on NIC
+
+The figure below highlights the primary SONiC and DASH software stack components and relationships, and will appear as variations within the DASH configurations described below.
+
+![dash-single-dpu-architecture](images/architecture/dash-single-dpu-architecture.svg)
+
+### DASH appliance
+
+A DASH "appliance" contains multiple (e.g., six) DASH NIC/DPU/Other devices installed as PCIe adaptors in a chassis. This chassis provides power and cooling with options for manageability/servicing/supportability (as needed), and other capability through PCIe bus, but no large-scale data path traversal of PCIe is needed. 
+
+Each NIC/DPU runs its own SONiC instance in such a way that it could also potentially operate as a standalone component once programmed through the control plane given the chassis power / cooling / management.  
+
+The PCIe bus *can* be used to bootstrap/upgrade cards and perform some platform management functions but is not a participant in steady-state datacenter traffic. 
+
+Each DASH NIC/DPU Will run a version of SONiC that exposes its own gNMI endpoint for SDN Control.  This endpoint is reachable in band through the "front-panel" DPU traffic ports via L3 routing. In other words, the SDN controller can reach the DPU management endpoints over the ToR-to-DPU fabric links. 
+
+In some cases, DPUs might provide separate management Ethernet ports, or PCIe netdevs which can be used for control purposes, in accordance with deployment and security needs.
+
+#### DASH appliance high level architecture
+
+![dash-high-level-appliance](images/architecture/dash-high-level-appliance.svg)
+
+#### DASH appliance low level architecture
+
+![dash-appliance-architecture](images/architecture/dash-appliance-architecture.svg)
 
 
-### Appliance
-
-
-### Smart switch 
+### DASH Smart switch 
 
 ### A day in the life of a DASH packet
 
