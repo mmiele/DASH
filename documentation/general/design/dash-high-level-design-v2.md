@@ -149,17 +149,15 @@ These comprise the main dataplane engines and are the core of what are variously
 
 ## SONiC integration
 
-The system architecture for SONiC-DASH relies upon the [SONiC system architecture](https://github.com/Azure/SONiC/wiki/Architecture), as shown in the following figure.
+The system architecture for SONiC-DASH relies upon the [SONiC system architecture](https://github.com/Azure/SONiC/wiki/Architecture). 
 
-![dash-high-level-design](images/architecture/dash-high-level-design.svg)
+For more information, see [SONiC-DASH HLD](https://github.com/prsunny/DASH/blob/main/Documentation/dash-sonic-hld.md). This document provides detailed design information about DASH APIs, DASH orchestration agent, configuration, and APP DB schemas and other SONiC buildimage changes required to install SONiC image on a DASH DPU. 
 
-<figcaption><i>Figure 2 - SONiC integration</i></figcaption>
-
-This architecture introduces the following DASH modifications:
+This SONiC-DASH architecture introduces the following  modifications:
 
 1. A *new docker container* in the user space named **dash container** to create the functional component for DASH.
 
-1. In the **sync-d container**, the **sai api DASH** (as opposed to *sai api* in the original SONiC architecture).  
+2. In the **sync-d container**, the **sai api DASH** (as opposed to *sai api* in the original SONiC architecture).  
 
 The *DPU/IPU/SmartNic* hardware will run a separate instance of SONiC-DASH on the hardware.  
 
