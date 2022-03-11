@@ -38,6 +38,8 @@ last update: 03/10/2022
     - [DASH appliance high level architecture](#dash-appliance-high-level-architecture)
     - [DASH appliance low level architecture](#dash-appliance-low-level-architecture)
   - [DASH Smart switch](#dash-smart-switch)
+    - [High level architecture](#high-level-architecture)
+    - [Low level architecture](#low-level-architecture)
   - [A day in the life of a DASH packet](#a-day-in-the-life-of-a-dash-packet)
   - [A day in the life of a DASH SDN controller](#a-day-in-the-life-of-a-dash-sdn-controller)
   - [A day in the life of a DASH container](#a-day-in-the-life-of-a-dash-container)
@@ -233,6 +235,15 @@ In some cases, DPUs might provide separate management Ethernet ports, or PCIe ne
 
 
 ### DASH Smart switch 
+
+A DASH "Smart Switch" is a merging of a datacenter switch and one or more DPUs into an integrated device. The "front-panel" network interfaces of the DPU(s) are wired directly into the switching fabric instead of being presented externally, saving cabling, electronics, space and power. There can also be some consolidation of software stacks, for example see [SONiC Multi-ASIC](https://github.com/Azure/SONiC/blob/master/doc/multi_asic/SONiC_multi_asic_hld.md) for how this is accomplished in standard SONiC multi-ASIC devices.
+#### High level architecture
+
+![dash-high-level-smart-switch](images/architecture/dash-high-level-smart-switch.svg)
+
+#### Low level architecture
+
+![dash-smart-switch-architecture](images/architecture/dash-smart-switch-architecture.svg)
 
 ### A day in the life of a DASH packet
 
