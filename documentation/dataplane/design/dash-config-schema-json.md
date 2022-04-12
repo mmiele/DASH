@@ -1,5 +1,5 @@
 ---
-description: Configuration schema example - Only for educational purposes. Not to be used in production.  
+description: Configuration schema example - Only for educational / collaboration purposes. Not to be used in production.  
 last update: 04/12/2022
 ---
 
