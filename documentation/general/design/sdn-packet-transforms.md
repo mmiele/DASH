@@ -35,13 +35,13 @@ last update: 04/14/2022
 <details>
   <summary>Click on the arrow to display or hide old image</summary>
 
-![VMtoVM](../../images/sdn/vm_to_vm.png)
+![VMtoVM](./images/sdn/vm_to_vm.png)
 
 </details>
 
 ### New image (VM to VM) 
 
-![VMtoVM](../../images/sdn/sdn-packet-transforms-vm-to-vm.svg)
+![VMtoVM](./images/sdn/sdn-packet-transforms-vm-to-vm.svg)
 
 ## Internal Load balancer (in VNET) communication
 
@@ -50,13 +50,13 @@ last update: 04/14/2022
 <details>
   <summary>Click on the arrow to display or hide old image</summary>
   
-![VMtoVMloadBalancer](../../images/sdn/vm_to_ilb.png)
+![VMtoVMloadBalancer](./images/sdn/vm_to_ilb.png)
 
 </details>
 
 ### New image (VM to VM LB) 
 
-![VMtoVMloadBalancer](../../images/sdn/sdn-packet-transforms-vm-internal-load-balancer.svg)
+![VMtoVMloadBalancer](./images/sdn/sdn-packet-transforms-vm-internal-load-balancer.svg)
 
 ## Private Link
 
@@ -65,13 +65,13 @@ last update: 04/14/2022
 <details>
   <summary>Click on the arrow to display or hide old image</summary>
 
-![PL](../../images/sdn/private_link.png)
+![PL](./images/sdn/private_link.png)
 
 </details>
 
 ### New image (PL)
 
-![PL](../../images/sdn/sdn-packet-transforms-private-link.svg)
+![PL](./images/sdn/sdn-packet-transforms-private-link.svg)
 
 ## Private Link Service
 
@@ -80,13 +80,13 @@ last update: 04/14/2022
 <details>
   <summary>Click on the arrow to display or hide old image</summary>
 
-![PLS](../../images/sdn/private_link_service.png)
+![PLS](./images/sdn/private_link_service.png)
 
 </details>
 
 ### New image (PLS)
 
-![PL](../../images/sdn/sdn-packet-transforms-private-link-service.svg)
+![PL](./images/sdn/sdn-packet-transforms-private-link-service.svg)
 
 ## Service Tunneling
 
@@ -95,13 +95,13 @@ last update: 04/14/2022
 <details>
   <summary>Click on the arrow to display or hide old image</summary>
 
-![ST](../../images/sdn/service_tunneling.png)
+![ST](./images/sdn/service_tunneling.png)
 
 </details>
 
 ### New image (ST)
 
-![ST](../../images/sdn/sdn-packet-transforms-service-tunneling.svg)
+![ST](./images/sdn/sdn-packet-transforms-service-tunneling.svg)
 
 ## Inbound from LB
 
@@ -111,13 +111,13 @@ last update: 04/14/2022
   <summary>Click on the arrow to display or hide old image</summary>
 
 
-![InbfromLB](../../images/sdn/inbound_frm_ilb.png)
+![InbfromLB](./images/sdn/inbound_frm_ilb.png)
 
 </details>
 
 ### New image (IFLB)
 
-![InbfromLB](../../images/sdn/sdn-packet-transforms-inbound-from-lb.svg)
+![InbfromLB](./images/sdn/sdn-packet-transforms-inbound-from-lb.svg)
 
 ## Outbound NAT - L4
 
@@ -127,7 +127,7 @@ last update: 04/14/2022
   <summary>Click on the arrow to display or hide old image</summary>
 
 
-![OutNATL4](../../images/sdn/outbound_nat_l4.png)
+![OutNATL4](./images/sdn/outbound_nat_l4.png)
 
 (L3 works in same way except port re-write)
 
@@ -135,7 +135,7 @@ last update: 04/14/2022
 
 ### New image (outNAT)
 
-![OutNATL4](../../images/sdn/sdn-packet-transforms-outbound-nat-l4.svg)
+![OutNATL4](./images/sdn/sdn-packet-transforms-outbound-nat-l4.svg)
 
 > [!NOTE]
 > L3 works in same way except port re-write
