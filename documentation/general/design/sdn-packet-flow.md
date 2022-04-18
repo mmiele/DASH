@@ -24,21 +24,21 @@ last update: 03/14/2022
 
 #### Fast Path - Flow Match
 
- ![Inb](../../images/sdn/inb_fast_path_flow_match.png)
+ ![Inb](./images/sdn/inb_fast_path_flow_match.png)
 
 #### Slow Path - No flow match
 
- ![InbSP](../../images/sdn/in_slow_path_no_flow_match.png)
+ ![InbSP](./images/sdn/in_slow_path_no_flow_match.png)
 
 ### Outbound
 
 #### Fast path - flow match
 
-![OutFP](../../images/sdn/out_fast_path_flow_match.png)
+![OutFP](./images/sdn/out_fast_path_flow_match.png)
 
 #### Slow Path (policy evaluation) - No flow match
 
-![OutSP](../../images/sdn/out_slow_path_pol_eval_no_flow_match.png)
+![OutSP](./images/sdn/out_slow_path_pol_eval_no_flow_match.png)
 
 
 ## Flow Replication
