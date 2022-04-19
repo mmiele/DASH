@@ -6,8 +6,10 @@ last update: 03/14/2022
 # Packet flow
 
 - [Applicable rules](#applicable-rules)
-  - [Inbound](#inbound)
-    - [Fast Path - Flow Match](#fast-path---flow-match)
+- [Inbound](#inbound)
+  - [Fast Path - Flow Match](#fast-path---flow-match)
+    - [Old image (Inbound fast path flow match)](#old-image-inbound-fast-path-flow-match)
+    - [New image (Inbound fast path flow match)](#new-image-inbound-fast-path-flow-match)
     - [Slow Path - No flow match](#slow-path---no-flow-match)
   - [Outbound](#outbound)
     - [Fast path - flow match](#fast-path---flow-match-1)
@@ -20,11 +22,23 @@ last update: 03/14/2022
 2. For **subsequent packets**, we take the **Fast Path**, matching a unified flow via UFID and applying a transposition directly against rules.
 
 
-### Inbound
+## Inbound
 
-#### Fast Path - Flow Match
+### Fast Path - Flow Match
 
- ![Inb](./images/sdn/inb_fast_path_flow_match.png)
+#### Old image (Inbound fast path flow match) 
+
+<details>
+  <summary>Click on the arrow to display or hide old image</summary>
+
+![Inb](./images/sdn/inb_fast_path_flow_match.png)
+
+</details>
+
+#### New image (Inbound fast path flow match)  
+
+![Inb](./images/sdn/sdn-packet-flow-inbound-fast-path-flow-match.svg)
+ 
 
 #### Slow Path - No flow match
 
