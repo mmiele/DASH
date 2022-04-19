@@ -10,10 +10,12 @@ last update: 03/14/2022
   - [Fast Path - Flow Match](#fast-path---flow-match)
     - [Old image (Inbound fast path flow match)](#old-image-inbound-fast-path-flow-match)
     - [New image (Inbound fast path flow match)](#new-image-inbound-fast-path-flow-match)
-    - [Slow Path - No flow match](#slow-path---no-flow-match)
-  - [Outbound](#outbound)
-    - [Fast path - flow match](#fast-path---flow-match-1)
-    - [Slow Path (policy evaluation) - No flow match](#slow-path-policy-evaluation---no-flow-match)
+  - [Slow Path - No flow match](#slow-path---no-flow-match)
+- [Outbound](#outbound)
+  - [Fast path - flow match](#fast-path---flow-match-1)
+    - [Old image (Outbound fast path flow match)](#old-image-outbound-fast-path-flow-match)
+    - [New image (Outbound fast path flow match)](#new-image-outbound-fast-path-flow-match)
+  - [Slow Path (policy evaluation) - No flow match](#slow-path-policy-evaluation---no-flow-match)
 - [Flow Replication](#flow-replication)
 
 ## Applicable rules
@@ -38,19 +40,30 @@ last update: 03/14/2022
 #### New image (Inbound fast path flow match)  
 
 ![Inb](./images/sdn/sdn-packet-flow-inbound-fast-path-flow-match.svg)
- 
 
-#### Slow Path - No flow match
+### Slow Path - No flow match
 
  ![InbSP](./images/sdn/in_slow_path_no_flow_match.png)
 
-### Outbound
+## Outbound
 
-#### Fast path - flow match
+### Fast path - flow match
+
+#### Old image (Outbound fast path flow match) 
+
+<details>
+  <summary>Click on the arrow to display or hide old image</summary>
 
 ![OutFP](./images/sdn/out_fast_path_flow_match.png)
 
-#### Slow Path (policy evaluation) - No flow match
+</details>
+
+#### New image (Outbound fast path flow match)  
+
+![Inb](./images/sdn/sdn-packet-flow-outbound-fast-path-flow-match.svg)
+
+### Slow Path (policy evaluation) - No flow match
+
 
 ![OutSP](./images/sdn/out_slow_path_pol_eval_no_flow_match.png)
 
