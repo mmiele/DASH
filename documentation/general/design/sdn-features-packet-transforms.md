@@ -10,12 +10,11 @@
 - [Scale per DPU (Card)](#scale-per-dpu-card)
 - [Scenario Milestone and Scoping](#scenario-milestone-and-scoping)
 - [Virtual Port and Packet Direction](#virtual-port-and-packet-direction)
+	- [Packet flow fast path flow match](#packet-flow-fast-path-flow-match)
+	- [Packet flow fast path no flow match](#packet-flow-fast-path-no-flow-match)
 - [Packet processing Pipeline (Sequential prefix match lookups)](#packet-processing-pipeline-sequential-prefix-match-lookups)
 	- [ACL](#acl)
 - [Routes and Route-Action](#routes-and-route-action)
-- [Packet Flow](#packet-flow)
-	- [Inbound](#inbound)
-	- [Outbound](#outbound)
 - [Packet Transform Examples](#packet-transform-examples)
 	- [VNET to VNET Traffic](#vnet-to-vnet-traffic)
 	- [VNET to Internet - TBD](#vnet-to-internet---tbd)
@@ -90,9 +89,15 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 
   - Virtual port is the container which holds all policies.
 
-	![sdn-virtual-port](images/sdn-virtual-port.svg)
+ ![sdn-virtual-port](images/sdn-virtual-port.svg)
 
-- On receiving a packet from the wire, the SDN appliance will determine the Packet direction, matching ENI, and packet processing strategy based on *Encap Transformation and Rules Evaluation*.  Upon receiving a packet, the SDN appliance will determine:
+### Packet flow fast path flow match
+
+> [!NOTE]
+> For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
+matching a unified flow via UFID and applying a transposition directly against rules.
+
+On receiving a packet from the wire, the SDN appliance will determine the Packet direction, matching ENI, and packet processing strategy based on *Encap Transformation and Rules Evaluation*.  Upon receiving a packet, the SDN appliance will determine:
 
 - Packet Direction - which is evaluated based off of the most-outer **VNI** lookup (implementation dependent) from the left-side (see figure below, a DASH optimized VM sending Outbound packets) behind the Appliance.  If there is no match, the direction is Inbound).
 
@@ -102,19 +107,38 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 
   - Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found, a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
 
-  - If no flow match is found, the ENI rule processing pipeline will execute.
+*Inbound Fast path - flow match*
+![Inb](images/inb_fast_path_flow_match.png)
 
-    - **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
+*Outbound Fast path - flow match*
+![OutFP](images/out_fast_path_flow_match.png)
 
-    - **Outbound rule** processing pipeline is executed if source MAC in the packet matches the ENI MAC.
+### Packet flow fast path no flow match
 
-      - Once outbound rule processing is complete and final transforms are identified, the corresponding flow is created in the flow table.
+> [!NOTE]
+> For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
+matching a unified flow via UFID and applying a transposition directly against rules.
 
-      - Depending upon the implementation of the flow table, a corresponding inbound flow may also be inserted to enable response packets to match the flow and bypass the rule processing pipeline.
+If no flow match is found, the ENI rule processing pipeline will execute.
 
-      - **Example**: VM with IP 10.0.0.1 sends a packet to 8.8.8.8, VM Inbound ACL blocks all internet, VM outbound ACL allows 8.8.8.8 \- Response packet from 8.8.8.8 must be allowed without opening any inbound ACL due to the flow match.
+- **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
 
-	![sdn-appliance](images/sdn-appliance.svg)
+   *Inbound Slow Path - No flow match*
+   ![InbSP](images/in_slow_path_no_flow_match.png)
+
+- **Outbound rule** processing pipeline is executed if source MAC in the packet matches the ENI MAC.
+
+  - Once outbound rule processing is complete and final transforms are identified, the corresponding flow is created in the flow table.
+
+  - Depending upon the implementation of the flow table, a corresponding inbound flow may also be inserted to enable response packets to match the flow and bypass the rule processing pipeline.
+
+
+   *Outbound Slow Path (policy evaluation) - No flow match*
+   ![OutSP](images/out_slow_path_pol_eval_no_flow_match.png)
+
+  - **Example**: VM with IP 10.0.0.1 sends a packet to 8.8.8.8, VM Inbound ACL blocks all internet, VM outbound ACL allows 8.8.8.8 \- Response packet from 8.8.8.8 must be allowed without opening any inbound ACL due to the flow match.
+
+ ![sdn-appliance](images/sdn-appliance.svg)
 
 - Note: the VNI is **static** on the 'left-side' (most-outer) of the diagram (there is only 1 encap) from the reserved VNI range
 - The VNI will be **different** depending upon the Inbound 'right-side' circumstance (Internet, ER Gateway for example)
@@ -267,7 +291,8 @@ Etc…
 | 10.0.0.1 -> 8.8.8.8 <br/>SMAC1-> DMAC_FAKE <br/>Outer: <br/>SRC: [Physical IP of host] <br/>DST: [Physical IP of SDN Appliance] <br/> VXLAN <br/>&nbsp; &nbsp; &nbsp;VNI: custom <br/> Inner Mac: <br/>&nbsp; &nbsp; &nbsp; SRC - SMAC1 DST - DMAC_FAKE <br/>Inner IP: <br/>&nbsp; &nbsp; &nbsp;[10.0.0.1] -> [8.8.8.8]| Route Id = 4| |
 | | | |
 
-## Packet Flow
+<!-- ## Packet Flow
+Commented out.
 
 For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
 matching a unified flow via UFID and applying a transposition directly against rules.
@@ -287,6 +312,7 @@ matching a unified flow via UFID and applying a transposition directly against r
 
  **Slow Path (policy evaluation) - No flow match**
 ![OutSP](images/out_slow_path_pol_eval_no_flow_match.png)
+-->
 
 ## Packet Transform Examples
 
