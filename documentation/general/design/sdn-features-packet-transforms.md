@@ -9,18 +9,17 @@
 - [First Target Scenario:  Highly Optimized Path, Dedicated Appliance, Little Processing or Encap to SDN Appliance and Policies on an SDN Appliance](#first-target-scenario--highly-optimized-path-dedicated-appliance-little-processing-or-encap-to-sdn-appliance-and-policies-on-an-sdn-appliance)
 - [Scale per DPU (Card)](#scale-per-dpu-card)
 - [Scenario Milestone and Scoping](#scenario-milestone-and-scoping)
-- [Virtual Port and Packet Direction](#virtual-port-and-packet-direction)
+- [Virtual Port](#virtual-port)
+- [Packet direction flow and transform](#packet-direction-flow-and-transform)
+  - [Fast and slow path](#fast-and-slow-path)
 - [Packet processing Pipeline (Sequential prefix match lookups)](#packet-processing-pipeline-sequential-prefix-match-lookups)
-	- [ACL](#acl)
+  - [ACL](#acl)
 - [Routes and Route-Action](#routes-and-route-action)
-- [Packet Flow](#packet-flow)
-	- [Inbound](#inbound)
-	- [Outbound](#outbound)
 - [Packet Transform Examples](#packet-transform-examples)
-	- [VNET to VNET Traffic](#vnet-to-vnet-traffic)
-	- [VNET to Internet - TBD](#vnet-to-internet---tbd)
-	- [VNET to Service Endpoints - TBD](#vnet-to-service-endpoints---tbd)
-	- [VNET to Private Link  - TBD](#vnet-to-private-link----tbd)
+  - [VNET to VNET Traffic](#vnet-to-vnet-traffic)
+  - [VNET to Internet - TBD](#vnet-to-internet---tbd)
+  - [VNET to Service Endpoints - TBD](#vnet-to-service-endpoints---tbd)
+  - [VNET to Private Link  - TBD](#vnet-to-private-link----tbd)
 - [Metering](#metering)
 - [VNET Encryption](#vnet-encryption)
 - [Telemetry](#telemetry)
@@ -33,14 +32,14 @@
 - [Unit Testing and development](#unit-testing-and-development)
 - [Internal Partner dependencies](#internal-partner-dependencies)
 - [Packet transforms](#packet-transforms)
-	- [VNET](#vnet)
-	- [Scenario:  VM<->VM (in VNET) communication](#scenario--vm-vm-in-vnet-communication)
-	- [Internal Load balancer](#internal-load-balancer)
-	- [Private Link](#private-link)
-	- [Private Link Service](#private-link-service)
-	- [Service Tunneling](#service-tunneling)
-	- [Inbound from LB](#inbound-from-lb)
-	- [Outbound NAT - L4](#outbound-nat---l4)
+  - [VNET](#vnet)
+  - [Scenario:  VM<->VM (in VNET) communication](#scenario--vm-vm-in-vnet-communication)
+  - [Internal Load balancer](#internal-load-balancer)
+  - [Private Link](#private-link)
+  - [Private Link Service](#private-link-service)
+  - [Service Tunneling](#service-tunneling)
+  - [Inbound from LB](#inbound-from-lb)
+  - [Outbound NAT - L4](#outbound-nat---l4)
 
 # SDN Features, Packet Transforms and Scale
 
@@ -80,7 +79,7 @@ Why do we need this scenario?  There is a huge cost associated with establishing
 | 5 | Private Link Service Link Service (dest side of Private Link) IPv6 to IPv4; DNAT’ing     |  | |
 | 6 | Flow replication; supporting High Availability (HA); flow efficiently replicates to secondary card; Active/Passive (depending upon ENI policy) or can even have Active/Active; OR provision the same ENI over multiple devices w/o multiple SDN appliances – Primaries for a certain set of VMS can be on both     |  | Not a must have for Private Preview <img width=400/>|
 
-## Virtual Port and Packet Direction
+## Virtual Port 
 
 An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance will have multiple cards; 1 card will have multiple machines or bare-metal servers), which supports Virtual Ports.   These can map to policy buckets corresponding to customer workloads, example: Virtual Machines, Bare Metal servers.
 
@@ -92,6 +91,8 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 
 	![sdn-virtual-port](images/sdn-virtual-port.svg)
 
+## Packet direction flow and transform
+
 - On receiving a packet from the wire, the SDN appliance will determine the Packet direction, matching ENI, and packet processing strategy based on *Encap Transformation and Rules Evaluation*.  Upon receiving a packet, the SDN appliance will determine:
 
 - Packet Direction - which is evaluated based off of the most-outer **VNI** lookup (implementation dependent) from the left-side (see figure below, a DASH optimized VM sending Outbound packets) behind the Appliance.  If there is no match, the direction is Inbound).
@@ -100,9 +101,20 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 - SLB decap (if packet was encapped by SLB)
 - Decap VNET GRE key
 
-  - Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found, a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
+### Fast and slow path
 
-  - If no flow match is found, the ENI rule processing pipeline will execute.
+For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
+matching a unified flow via UFID and applying a transposition directly against rules.
+
+  - Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found ([**fast path**](https://datatracker.ietf.org/doc/html/rfc793)), a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
+
+    > [!NOTE]
+    > add fast path inbound and outbound images
+
+  - If no flow match is found (**slow path**), the ENI rule processing pipeline will execute.
+
+     > [!NOTE]
+    > add slow path inbound and outbound images
 
     - **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
 
@@ -267,7 +279,7 @@ Etc…
 | 10.0.0.1 -> 8.8.8.8 <br/>SMAC1-> DMAC_FAKE <br/>Outer: <br/>SRC: [Physical IP of host] <br/>DST: [Physical IP of SDN Appliance] <br/> VXLAN <br/>&nbsp; &nbsp; &nbsp;VNI: custom <br/> Inner Mac: <br/>&nbsp; &nbsp; &nbsp; SRC - SMAC1 DST - DMAC_FAKE <br/>Inner IP: <br/>&nbsp; &nbsp; &nbsp;[10.0.0.1] -> [8.8.8.8]| Route Id = 4| |
 | | | |
 
-## Packet Flow
+<!-- ## Packet Flow
 
 For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
 matching a unified flow via UFID and applying a transposition directly against rules.
@@ -287,6 +299,7 @@ matching a unified flow via UFID and applying a transposition directly against r
 
  **Slow Path (policy evaluation) - No flow match**
 ![OutSP](images/out_slow_path_pol_eval_no_flow_match.png)
+-->
 
 ## Packet Transform Examples
 
