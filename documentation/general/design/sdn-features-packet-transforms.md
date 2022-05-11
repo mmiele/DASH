@@ -3,8 +3,7 @@
 [<< Back to DASH top-level Documents](../../README.md#contents) ]
 
 >**NOTE**: This document is destined to be restructured into general- and per-service specifications.
-
-**Table of contents**
+# SDN Features, Packet Transforms and Scale
 
 - [First Target Scenario:  Highly Optimized Path, Dedicated Appliance, Little Processing or Encap to SDN Appliance and Policies on an SDN Appliance](#first-target-scenario--highly-optimized-path-dedicated-appliance-little-processing-or-encap-to-sdn-appliance-and-policies-on-an-sdn-appliance)
 - [Scale per DPU (Card)](#scale-per-dpu-card)
@@ -40,8 +39,6 @@
   - [Service Tunneling](#service-tunneling)
   - [Inbound from LB](#inbound-from-lb)
   - [Outbound NAT - L4](#outbound-nat---l4)
-
-# SDN Features, Packet Transforms and Scale
 
 ## First Target Scenario:  Highly Optimized Path, Dedicated Appliance, Little Processing or Encap to SDN Appliance and Policies on an SDN Appliance
 
@@ -79,7 +76,7 @@ Why do we need this scenario?  There is a huge cost associated with establishing
 | 5 | Private Link Service Link Service (dest side of Private Link) IPv6 to IPv4; DNAT’ing     |  | |
 | 6 | Flow replication; supporting High Availability (HA); flow efficiently replicates to secondary card; Active/Passive (depending upon ENI policy) or can even have Active/Active; OR provision the same ENI over multiple devices w/o multiple SDN appliances – Primaries for a certain set of VMS can be on both     |  | Not a must have for Private Preview <img width=400/>|
 
-## Virtual Port 
+## Virtual Port
 
 An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance will have multiple cards; 1 card will have multiple machines or bare-metal servers), which supports Virtual Ports.   These can map to policy buckets corresponding to customer workloads, example: Virtual Machines, Bare Metal servers.
 
@@ -89,7 +86,7 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 
   - Virtual port is the container which holds all policies.
 
-	![sdn-virtual-port](images/sdn-virtual-port.svg)
+ ![sdn-virtual-port](images/sdn-virtual-port.svg)
 
 ## Packet direction flow and transform
 
@@ -106,29 +103,29 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
 matching a unified flow via UFID and applying a transposition directly against rules.
 
-  - Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found ([**fast path**](https://datatracker.ietf.org/doc/html/rfc793)), a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
+- Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found (**fast path**), a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
 
-     ![inbound-fast-path](./images/inbound-fast-path.svg)
+    ![inbound-fast-path](./images/inbound-fast-path.svg)
 
-      ![outbound-fast-path](./images/outbound-fast-path.svg)
+    ![outbound-fast-path](./images/outbound-fast-path.svg)
 
-  - If no flow match is found (**slow path**), the ENI rule processing pipeline will execute.
+- If no flow match is found (**slow path**), the ENI rule processing pipeline will execute.
 
-      ![inbound-slow-path](./images/inbound-slow-path.svg)
+    ![inbound-slow-path](./images/inbound-slow-path.svg)
 
-      ![outbound-slow-path](./images/outbound-slow-path.svg)
+    ![outbound-slow-path](./images/outbound-slow-path.svg)
 
-    - **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
+  - **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
 
-    - **Outbound rule** processing pipeline is executed if source MAC in the packet matches the ENI MAC.
+  - **Outbound rule** processing pipeline is executed if source MAC in the packet matches the ENI MAC.
 
-      - Once outbound rule processing is complete and final transforms are identified, the corresponding flow is created in the flow table.
+    - Once outbound rule processing is complete and final transforms are identified, the corresponding flow is created in the flow table.
 
-      - Depending upon the implementation of the flow table, a corresponding inbound flow may also be inserted to enable response packets to match the flow and bypass the rule processing pipeline.
+    - Depending upon the implementation of the flow table, a corresponding inbound flow may also be inserted to enable response packets to match the flow and bypass the rule processing pipeline.
 
-      - **Example**: VM with IP 10.0.0.1 sends a packet to 8.8.8.8, VM Inbound ACL blocks all internet, VM outbound ACL allows 8.8.8.8 \- Response packet from 8.8.8.8 must be allowed without opening any inbound ACL due to the flow match.
+    - **Example**: VM with IP 10.0.0.1 sends a packet to 8.8.8.8, VM Inbound ACL blocks all internet, VM outbound ACL allows 8.8.8.8 \- Response packet from 8.8.8.8 must be allowed without opening any inbound ACL due to the flow match.
 
-	![sdn-appliance](images/sdn-appliance.svg)
+ ![sdn-appliance](images/sdn-appliance.svg)
 
 - Note: the VNI is **static** on the 'left-side' (most-outer) of the diagram (there is only 1 encap) from the reserved VNI range
 - The VNI will be **different** depending upon the Inbound 'right-side' circumstance (Internet, ER Gateway for example)
