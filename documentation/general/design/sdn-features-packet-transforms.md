@@ -11,7 +11,7 @@
 - [Scenario Milestone and Scoping](#scenario-milestone-and-scoping)
 - [Virtual Port](#virtual-port)
 - [Packet direction flow and transform](#packet-direction-flow-and-transform)
-  - [Fast and slow path](#fast-and-slow-path)
+  - [Fast and slow paths](#fast-and-slow-paths)
 - [Packet processing Pipeline (Sequential prefix match lookups)](#packet-processing-pipeline-sequential-prefix-match-lookups)
   - [ACL](#acl)
 - [Routes and Route-Action](#routes-and-route-action)
@@ -101,20 +101,22 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 - SLB decap (if packet was encapped by SLB)
 - Decap VNET GRE key
 
-### Fast and slow path
+### Fast and slow paths
 
 For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
 matching a unified flow via UFID and applying a transposition directly against rules.
 
   - Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found ([**fast path**](https://datatracker.ietf.org/doc/html/rfc793)), a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
 
-    > [!NOTE]
-    > add fast path inbound and outbound images
+     ![inbound-fast-path](./images/inbound-fast-path.svg)
+
+      ![outbound-fast-path](./images/outbound-fast-path.svg)
 
   - If no flow match is found (**slow path**), the ENI rule processing pipeline will execute.
 
-     > [!NOTE]
-    > add slow path inbound and outbound images
+      ![inbound-slow-path](./images/inbound-slow-path.svg)
+
+      ![outbound-slow-path](./images/outbound-slow-path.svg)
 
     - **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
 
