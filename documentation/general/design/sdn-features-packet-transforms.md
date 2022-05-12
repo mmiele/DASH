@@ -105,7 +105,7 @@ matching a unified flow via UFID and applying a transposition directly against r
 
 - Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found (**fast path**), a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
 
-    ![inbound-fast-path](./images/inbound-fast-path.svg)
+    ![inbound-fast-path](./images/inbound-fast-path-draft.svg)
 
     ![outbound-fast-path](./images/outbound-fast-path.svg)
 
