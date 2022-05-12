@@ -3,6 +3,7 @@
 [<< Back to DASH top-level Documents](../../README.md#contents) ]
 
 >**NOTE**: This document is destined to be restructured into general- and per-service specifications.
+
 # SDN Features, Packet Transforms and Scale
 
 - [First Target Scenario:  Highly Optimized Path, Dedicated Appliance, Little Processing or Encap to SDN Appliance and Policies on an SDN Appliance](#first-target-scenario--highly-optimized-path-dedicated-appliance-little-processing-or-encap-to-sdn-appliance-and-policies-on-an-sdn-appliance)
@@ -11,6 +12,12 @@
 - [Virtual Port](#virtual-port)
 - [Packet direction flow and transform](#packet-direction-flow-and-transform)
   - [Fast and slow paths](#fast-and-slow-paths)
+    - [Fast path](#fast-path)
+      - [Inbound fast path](#inbound-fast-path)
+      - [Outbound fast path](#outbound-fast-path)
+    - [Slow path](#slow-path)
+      - [Inbound slow path](#inbound-slow-path)
+      - [Outbound slow path](#outbound-slow-path)
 - [Packet processing Pipeline (Sequential prefix match lookups)](#packet-processing-pipeline-sequential-prefix-match-lookups)
   - [ACL](#acl)
 - [Routes and Route-Action](#routes-and-route-action)
@@ -103,27 +110,39 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
 matching a unified flow via UFID and applying a transposition directly against rules.
 
-- Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found (**fast path**), a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
+#### Fast path
 
-    ![inbound-fast-path](./images/inbound-fast-path-draft.svg)
+Once the ENI is matched, the packet is first matched with flow table to check whether an existing flow already matches.  If a flow match is found (**fast path**), a corresponding match action is executed without entering into rule processing. Flow match direction is identified based on source and destination MAC.
 
-    ![outbound-fast-path](./images/outbound-fast-path.svg)
+##### Inbound fast path
 
-- If no flow match is found (**slow path**), the ENI rule processing pipeline will execute.
+  ![inbound-fast-path](./images/inbound-fast-path-draft.svg)
 
-    ![inbound-slow-path](./images/inbound-slow-path.svg)
+##### Outbound fast path
 
-    ![outbound-slow-path](./images/outbound-slow-path.svg)
+  ![outbound-fast-path](./images/outbound-fast-path.svg)
 
-  - **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
+#### Slow path
 
-  - **Outbound rule** processing pipeline is executed if source MAC in the packet matches the ENI MAC.
+If no flow match is found (**slow path**), the ENI rule processing pipeline will execute.
 
-    - Once outbound rule processing is complete and final transforms are identified, the corresponding flow is created in the flow table.
+##### Inbound slow path
 
-    - Depending upon the implementation of the flow table, a corresponding inbound flow may also be inserted to enable response packets to match the flow and bypass the rule processing pipeline.
+**Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
 
-    - **Example**: VM with IP 10.0.0.1 sends a packet to 8.8.8.8, VM Inbound ACL blocks all internet, VM outbound ACL allows 8.8.8.8 \- Response packet from 8.8.8.8 must be allowed without opening any inbound ACL due to the flow match.
+![inbound-slow-path](./images/inbound-slow-path.svg)
+
+##### Outbound slow path
+
+**Outbound rule** processing pipeline is executed if source MAC in the packet matches the ENI MAC.
+   
+![outbound-slow-path](./images/outbound-slow-path.svg)
+
+- Once outbound rule processing is complete and final transforms are identified, the corresponding flow is created in the flow table.
+
+- Depending upon the implementation of the flow table, a corresponding inbound flow may also be inserted to enable response packets to match the flow and bypass the rule processing pipeline.
+
+**Example**: VM with IP 10.0.0.1 sends a packet to 8.8.8.8, VM Inbound ACL blocks all internet, VM outbound ACL allows 8.8.8.8 \- Response packet from 8.8.8.8 must be allowed without opening any inbound ACL due to the flow match.
 
  ![sdn-appliance](images/sdn-appliance.svg)
 
