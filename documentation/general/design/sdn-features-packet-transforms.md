@@ -120,7 +120,7 @@ Once the ENI is matched, the packet is first matched with flow table to check wh
 
 ##### Outbound fast path
 
-  ![outbound-fast-path](./images/outbound-fast-path.svg)
+  ![outbound-fast-path](./images/outbound-fast-path-draft.svg)
 
 #### Slow path
 
@@ -130,7 +130,7 @@ If no flow match is found (**slow path**), the ENI rule processing pipeline will
 
 **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
 
-![inbound-slow-path](./images/inbound-slow-path.svg)
+![inbound-slow-path](./images/inbound-slow-path-draft.svg)
 
 ##### Outbound slow path
 
