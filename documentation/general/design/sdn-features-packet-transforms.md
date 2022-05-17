@@ -136,7 +136,7 @@ If no flow match is found (**slow path**), the ENI rule processing pipeline will
 
 **Outbound rule** processing pipeline is executed if source MAC in the packet matches the ENI MAC.
    
-![outbound-slow-path](./images/outbound-slow-path.svg)
+![outbound-slow-path](./images/outbound-slow-path-draft.svg)
 
 - Once outbound rule processing is complete and final transforms are identified, the corresponding flow is created in the flow table.
 
