@@ -11,21 +11,21 @@
 - [Scenario Milestone and Scoping](#scenario-milestone-and-scoping)
 - [Virtual Port](#virtual-port)
 - [Packet direction flow and transform](#packet-direction-flow-and-transform)
-  - [Fast and slow paths](#fast-and-slow-paths)
-    - [Fast path](#fast-path)
-      - [Inbound fast path](#inbound-fast-path)
-      - [Outbound fast path](#outbound-fast-path)
-    - [Slow path](#slow-path)
-      - [Inbound slow path](#inbound-slow-path)
-      - [Outbound slow path](#outbound-slow-path)
+	- [Fast and slow paths](#fast-and-slow-paths)
+		- [Fast path](#fast-path)
+			- [Inbound fast path](#inbound-fast-path)
+			- [Outbound fast path](#outbound-fast-path)
+		- [Slow path](#slow-path)
+			- [Inbound slow path](#inbound-slow-path)
+			- [Outbound slow path](#outbound-slow-path)
 - [Packet processing Pipeline (Sequential prefix match lookups)](#packet-processing-pipeline-sequential-prefix-match-lookups)
-  - [ACL](#acl)
+	- [ACL](#acl)
 - [Routes and Route-Action](#routes-and-route-action)
 - [Packet Transform Examples](#packet-transform-examples)
-  - [VNET to VNET Traffic](#vnet-to-vnet-traffic)
-  - [VNET to Internet - TBD](#vnet-to-internet---tbd)
-  - [VNET to Service Endpoints - TBD](#vnet-to-service-endpoints---tbd)
-  - [VNET to Private Link  - TBD](#vnet-to-private-link----tbd)
+	- [VNET to VNET Traffic](#vnet-to-vnet-traffic)
+	- [VNET to Internet - TBD](#vnet-to-internet---tbd)
+	- [VNET to Service Endpoints - TBD](#vnet-to-service-endpoints---tbd)
+	- [VNET to Private Link  - TBD](#vnet-to-private-link----tbd)
 - [Metering](#metering)
 - [VNET Encryption](#vnet-encryption)
 - [Telemetry](#telemetry)
@@ -38,14 +38,14 @@
 - [Unit Testing and development](#unit-testing-and-development)
 - [Internal Partner dependencies](#internal-partner-dependencies)
 - [Packet transforms](#packet-transforms)
-  - [VNET](#vnet)
-  - [Scenario:  VM<->VM (in VNET) communication](#scenario--vm-vm-in-vnet-communication)
-  - [Internal Load balancer](#internal-load-balancer)
-  - [Private Link](#private-link)
-  - [Private Link Service](#private-link-service)
-  - [Service Tunneling](#service-tunneling)
-  - [Inbound from LB](#inbound-from-lb)
-  - [Outbound NAT - L4](#outbound-nat---l4)
+	- [VNET](#vnet)
+	- [Scenario:  VM<->VM (in VNET) communication](#scenario--vm-vm-in-vnet-communication)
+	- [Internal Load balancer](#internal-load-balancer)
+	- [Private Link](#private-link)
+	- [Private Link Service](#private-link-service)
+	- [Service Tunneling](#service-tunneling)
+	- [Inbound from LB](#inbound-from-lb)
+	- [Outbound NAT - L4](#outbound-nat---l4)
 
 ## First Target Scenario:  Highly Optimized Path, Dedicated Appliance, Little Processing or Encap to SDN Appliance and Policies on an SDN Appliance
 
@@ -105,6 +105,11 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 - SLB decap (if packet was encapped by SLB)
 - Decap VNET GRE key
 
+The following figure shows the preliminary steps to determine the packet direction prior to slecting a fast or slow path. 
+
+![eni-match-flow-direction](./images/eni-match-flow-direction.svg)
+
+
 ### Fast and slow paths
 
 For the first packet of a TCP flow, we take the Slow Path, running the transposition engine and matching at each layer.  For subsequent packets, we take the Fast Path,
@@ -116,11 +121,11 @@ Once the ENI is matched, the packet is first matched with flow table to check wh
 
 ##### Inbound fast path
 
-  ![inbound-fast-path](./images/inbound-fast-path-draft.svg)
+  ![inbound-fast-path](./images/inbound-fast-path-flowchart.svg)
 
 ##### Outbound fast path
 
-  ![outbound-fast-path](./images/outbound-fast-path-draft.svg)
+  ![outbound-fast-path](./images/outbound-fast-path-flowchart.svg)
 
 #### Slow path
 
@@ -130,13 +135,13 @@ If no flow match is found (**slow path**), the ENI rule processing pipeline will
 
 **Inbound rule** processing pipeline is executed if destination MAC in the packet matches the ENI MAC. Once rule pipeline is executed corresponding flows are created.
 
-![inbound-slow-path](./images/inbound-slow-path-draft.svg)
+![inbound-slow-path](./images/inbound-slow-path-flowchart.svg)
 
 ##### Outbound slow path
 
 **Outbound rule** processing pipeline is executed if source MAC in the packet matches the ENI MAC.
    
-![outbound-slow-path](./images/outbound-slow-path-draft.svg)
+![outbound-slow-path](./images/outbound-slow-path-flowchart.svg)
 
 - Once outbound rule processing is complete and final transforms are identified, the corresponding flow is created in the flow table.
 
