@@ -105,7 +105,7 @@ An SDN appliance in a multi-tenant network appliance (meaning 1 SDN appliance wi
 - SLB decap (if packet was encapped by SLB)
 - Decap VNET GRE key
 
-The following figure shows the preliminary steps to determine the packet direction prior to slecting a fast or slow path. 
+The following figure shows the preliminary steps to determine the packet direction prior to selecting a fast or slow path. 
 
 ![eni-match-flow-direction](./images/eni-match-flow-direction.svg)
 
