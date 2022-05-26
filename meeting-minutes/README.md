@@ -3,7 +3,7 @@
 
 This folder contains SONiC-DASH meeting minutes for the following meetings:
 
-- [SONiC-DASH community Weekly](sonic-dash-community-weekly/README.md)
+- [SONiC-DASH community weekly](sonic-dash-community-weekly)
 - Behavioral Model 
 - High Availability working groups.  
 
