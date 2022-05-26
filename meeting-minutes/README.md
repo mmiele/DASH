@@ -3,9 +3,9 @@
 
 This folder contains SONiC-DASH meeting minutes for the following meetings:
 
-- [DASH community weekly](dash-community-weekly)
-- [Behavioral Model](behavioral-model)
-- [High Availability](high-availability)  
+- [DASH community weekly meeting minutes](dash-community-weekly)
+- [DASH Behavioral Model meeting minutes](dash-behavioral-model)
+- [DASH High Availability meeting minutes](dash-high-availability)  
 
 > [!NOTE]
 > New [YouTube channel](https://www.youtube.com/channel/UCNE3zNwJqcEyLX9ejKrLtUA/videos?view=0&sort=dd&flow=grid) to complement the Teams recordings; playlists for 
