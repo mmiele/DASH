@@ -1,7 +1,7 @@
 
-# Meeting minutes
+# DASH High Availability meeting minutes
 
-This folder contains SONiC-DASH community weekly meeting minutes along with the recording links.  
+This folder contains DASH High Availability meeting minutes along with the recording links.  
 
 The meeting minute files are in Outlook format with extension `.msg`, to read them you must use Outlook.
 
