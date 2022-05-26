@@ -1,4 +1,4 @@
 
 # Meeting notes
 
-This folder contains meeting meeting notes. 
+This folder contains DASH meeting notes. 
