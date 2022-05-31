@@ -40,4 +40,4 @@ A P4 programmable silicon device differs from a traditional one in two essential
 
     The following figure shows the workflow when programming a device using P4.
 
-    ![p4-pgm-target-vorkflow](images\p4\p4-pgm-target-vorkflow.svg)
+    ![p4-pgm-target-vorkflow](./images/p4/p4-pgm-target-vorkflow.svg)
