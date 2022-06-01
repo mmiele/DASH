@@ -38,6 +38,26 @@ A P4 programmable silicon device differs from a traditional one in two essential
 1. The **data plane** functionality is not fixed in advance but is defined by a P4 program. The data plane is configured at initialization time to implement the functionality described by the P4 program and has no built-in knowledge of existing network protocols.
 2. The **control plane** communicates with the data plane using the same channels as in a fixed-function device, but the set of tables and other objects in the data plane are no longer fixed, since they are defined by a P4 program. The P4 compiler generates the API that the control plane uses to communicate with the data plane. Hence, P4 can be said to be **protocol independent**, but it enables programmers to express a rich set of protocols and other data plane behaviors.
 
-    The following figure shows the workflow when programming a device using P4.
 
-    ![p4-pgm-target-vorkflow](./images/p4/p4-pgm-target-vorkflow.svg)
+The following figure shows the workflow when programming a device using P4.
+
+![p4-pgm-target-vorkflow](./images/p4/p4-pgm-target-vorkflow.svg)
+
+- Target manufacturers provide the **hardware or software implementation
+  framework**, an **architecture definition**, and a **P4 compiler** for that
+  target.
+- P4 programmers write **programs for a specific architecture**, which defines a
+  **set of P4-programmable components on the target** as well as **their
+  external data plane interfaces**.
+
+Compiling a set of P4 programs produces two artifacts:
+
+- A **data plane configuration** that implements the forwarding logic described
+  in the input program.
+- An **API** for managing the state of the data plane objects from the control
+  plane.
+
+> [!NOTE] The computational complexity of a P4 program is linear in the total
+> size of all headers, and never depends on the size of the state accumulated
+> while processing data (e.g., the number of flows, or the total number of
+> packets processed).
