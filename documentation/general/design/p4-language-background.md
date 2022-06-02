@@ -43,6 +43,8 @@ The following figure shows the workflow when programming a device using P4.
 
 ![p4-pgm-target-vorkflow](./images/p4/p4-pgm-target-vorkflow.svg)
 
+<figcaption><i>Figure 1 - P4 workflow to program a target</i></figcaption><br/><br/>
+
 - Target manufacturers provide the **hardware or software implementation
   framework**, an **architecture definition**, and a **P4 compiler** for that
   target.
