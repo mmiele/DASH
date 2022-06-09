@@ -16,7 +16,6 @@ Last update: 06/09/2022
 
 This article describes some of DASH key architecturale elements.
 
-
 ## SONiC integration
 
 DASH relies upon the [SONiC system
