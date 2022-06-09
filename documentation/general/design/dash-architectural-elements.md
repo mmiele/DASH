@@ -10,6 +10,7 @@ Last update: 06/09/2022
 # DASH key architectural elements
 
 - [SONiC integration](#sonic-integration)
+  - [Multiple DPUs device](#multiple-dpus-device)
 - [Processing pipeline](#processing-pipeline)
   - [Elastic Network Interface](#elastic-network-interface)
   - [Policy processing per ENI](#policy-processing-per-eni)
@@ -34,61 +35,86 @@ HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-s
 
 <figcaption><i>Figure 1 - SONiC components relevant to DASH</i></figcaption><br/><br/>
 
-The previous figure shows the SONiC components relevant to DASH as summarized below. 
+The previous figure shows the SONiC components relevant to DASH as summarized
+below. 
 
-1. **SDN controller**. The Software Defined Networking (SDN) controller is primarily **responsible for
-   controlling the DASH overlay services**, while the traditional SONiC
-   application containers are used to manage the underlay (L3 routing) and
-   hardware platform. 
+1. **SDN controller**. The Software Defined Networking (SDN) controller is
+   primarily **responsible for controlling the DASH overlay services**, while
+   the traditional SONiC application containers are used to manage the underlay
+   (L3 routing) and hardware platform. 
       1. **DASH API** is exposed as **gNMI interface** as part of the *gNMI
    container*, see next point. 
       1. **gNMI client** is used to configure SONiC via `gRPC get/set` calls.
 
-   The SDN controller controls the **overlay** built on top of the **underlay** (physical layer)
-   of the infrastructure. From the point of view of the SDN control
-   plane, when a customer creates an operation from the cloud portal (for
-   example a VNET creation), the controller allocates the resources, placement
-   management, capacity, etc. via the **NorthBound** interface DASH API.
+   The SDN controller controls the **overlay** built on top of the **underlay**
+   (physical layer) of the infrastructure. From the point of view of the SDN
+   control plane, when a customer creates an operation from the cloud portal
+   (for example a VNET creation), the controller allocates the resources,
+   placement management, capacity, etc. via the **NorthBound** interface DASH
+   API.
 
 2. **gNMI container**. The SDN controller communicates with a DASH device
-   through a **gNMI endpoint** served by a DASH SDN agent running inside a
-   new SONiC container the **gNMI container**.  
+   through a **gNMI endpoint** served by a DASH SDN agent running inside a new
+   SONiC container the **gNMI container**.  
    1. **gNMI server**. The gNMI schema is closely related to the DASH DB schema
    so in effect, the *gNMI server* is a **thin RPC shim layer** to the DB.
    1. **Config Backend**. Translates SDN configuration into **confdb** or
       **APPDB** objects.
 
     The functionality of the new **gNMI container** in the user space is to
-    receive information objects from the SDN controller to
-    control the setup for the overlay configurations. Upon receiving these objects, 
-    DASH *translates* them using the **gNMI agent** and provides them to the *SONiC
-    orchagent* for further translation into the dataplane via the **SAI
-    database**. 
+    receive information objects from the SDN controller to control the setup for
+    the overlay configurations. Upon receiving these objects, DASH *translates*
+    them using the **gNMI agent** and provides them to the *SONiC orchagent* for
+    further translation into the dataplane via the **SAI database**. 
+
+    > [!NOTE] **Microsoft will deliver the gNMI container as code to SONiC** to
+    > allow any SONiC switch to talk with and integrate DPU technology. The
+    > *gNMI container software* integrates with the SONiC system containers
+    > seemlessly. Microsoft will ensure a high quality integration with the
+    > switch.
 
 3. **SWSS container**. The Switch State Service (SWSS) has a small
    initialization and supports a defined set of **SAI APIs**.
-   1. **dashorch**. The DASH orchestration agent provides the **DASH Overlay** in the SWSS
-    container that subscribes to the DB objects programmed by the **gNMI
-    agent**. It transforms and translates these objects into ASIC_DB objects,
-    including the new DASH specific SAI objects.
-   2. **orchagent**. The DASH orchestration agent writes the state of each
+   1. **dashorch**. The DASH orchestration agent provides the **DASH Overlay**
+    in the SWSS container that subscribes to the DB objects programmed by the
+    **gNMI agent**. It transforms and translates these objects into ASIC_DB
+    objects, including the new DASH specific SAI objects.
+   1. **orchagent**. The DASH orchestration agent writes the state of each
       tables to STATEDB used by the applications to fetch the programmed status
       of DASH configured objects.
-4. **sync-d container**. Provides **sai api DASH** that allows the hardware providers to program their DPU via their
-  SAI implementation. This is a DASH enhanced sync-d that configures the
-  dataplane using the technology supplier-specific SAI library **asic SDK**.
+
+4. **sync-d container**. Provides **sai api DASH** that allows the hardware
+  providers to program their DPU via their SAI implementation. This is a DASH
+  enhanced sync-d that configures the dataplane using the technology
+  supplier-specific SAI library **asic SDK**.
 
   Both the DASH container and the traditional SONiC application containers sit
   on top of the Switch State services (SWSS) layer, and manipulate the Redis
   application-layer DBs; these in turn are translated into SAI dataplane obects
   via the normal SONiC orchestration daemons inside SWSS.
 
-> [!NOTE] The *DPU/IPU/SmartNic* device will run a separate instance of SONiC
-> DASH on the device.  
+
+### Multiple DPUs device
+
+In the case of a multiple DPUs device the following applies:
+
+- Each DPU provides a gNMI endpoint for SDN controller through a unique IP
+  address.
+- An appliance or smart switch containing multiple DPUs will contain multiple
+  gNMI endpoints for SDN controller, and the controller treats each DPU as a
+  separate entity.
+- To conserve IPv4 addresses, such an appliance or switch might contain a proxy
+  (NAT) function to map a single IP address:port combination into multiple DPU
+  endpoints with unique IPv4 addresses.
+- No complex logic will run on the switches (switches do not have a top-level
+  view of other/neighboring switches in the infrastructure).
+
+> [!NOTE] Each DPU shall have an instance of SONiC DASH OS that exposes the gNMI
+> APIs to the SDN controller.
 
 ## Processing pipeline
 
-The processing pipeline must support both IPv4 and IPv6 protocols for both
+DASH processing pipeline must support both IPv4 and IPv6 protocols for both
 underlay and overlay, unless explicitly stated that some scenario is IPv4-only
 or IPv6-only. 
 
