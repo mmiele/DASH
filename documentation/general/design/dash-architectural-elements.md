@@ -309,6 +309,8 @@ Only one rule will be matched.
 
 ## Packet flow
 
+<!-- See SONIiC HLD -->
+
 ## References
 
 ## Appendix
