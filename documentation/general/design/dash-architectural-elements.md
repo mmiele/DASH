@@ -33,9 +33,9 @@ HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-s
 
 ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
 
-<figcaption><i>Figure 1 - SONiC components relevant to DASH</i></figcaption><br/><br/>
+<figcaption><i>Figure 1 - SONiC components modified by DASH</i></figcaption><br/><br/>
 
-The previous figure shows the SONiC components relevant to DASH as summarized
+The previous figure shows the SONiC components modified by DASH which are summarized
 below. 
 
 1. **SDN controller**. The Software Defined Networking (SDN) controller is
