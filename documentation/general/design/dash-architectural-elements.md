@@ -25,9 +25,10 @@ HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-s
 
 ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
 
-<figcaption><i>Figure 1 - DASH architectural modifications to SONiC</i></figcaption><br/>
+<figcaption><i>Figure 1 - DASH architectural modifications to SONiC</i></figcaption><br/><br/>
 
-The previous figure shows the SONiC architectural modifications for DASH summirized below. 
+The previous figure shows the SONiC architectural modifications for DASH that
+are summarized below. 
 
 1. **SDN controller**. The SDN controller is primarily **responsible for
    controlling the DASH overlay services**, while the traditional SONiC
@@ -85,8 +86,6 @@ The previous figure shows the SONiC architectural modifications for DASH summiri
 
 
 ## Processing pipeline
-
-
 
 
 ## References
