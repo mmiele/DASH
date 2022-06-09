@@ -25,59 +25,58 @@ This article describes some of DASH key architecturale elements.
 ## SONiC integration
 
 DASH relies upon the [SONiC system
-architecture](https://github.com/Azure/SONiC/wiki/Architecture) as shown in the figure below.
-For more information and details about the integration, see [SONiC DASH
+architecture](https://github.com/Azure/SONiC/wiki/Architecture) as shown in the
+figure below. For more information and details about the integration, see [SONiC
+DASH
 HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-sonic-hld.md). 
 
 ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
 
-<figcaption><i>Figure 1 - DASH architectural modifications to SONiC</i></figcaption><br/><br/>
+<figcaption><i>Figure 1 - SONiC components relevant to DASH</i></figcaption><br/><br/>
 
-The previous figure shows the SONiC architectural modifications for DASH that
-are summarized below. 
+The previous figure shows the SONiC components relevant to DASH as summarized below. 
 
-1. **SDN controller**. The SDN controller is primarily **responsible for
+1. **SDN controller**. The Software Defined Networking (SDN) controller is primarily **responsible for
    controlling the DASH overlay services**, while the traditional SONiC
    application containers are used to manage the underlay (L3 routing) and
    hardware platform. 
-      1. A **DASH API** is exposed as **gNMI interface** as part of the *gNMI
+      1. **DASH API** is exposed as **gNMI interface** as part of the *gNMI
    container*, see next point. 
-      1. **gNMI client** configures SONiC via `gRPC get/set` calls.
+      1. **gNMI client** is used to configure SONiC via `gRPC get/set` calls.
 
-   The SDN controller controls the overlay built on top of the physical layer
-   (underlay) of the infrastructure. From the point of view of the SDN control
+   The SDN controller controls the **overlay** built on top of the **underlay** (physical layer)
+   of the infrastructure. From the point of view of the SDN control
    plane, when a customer creates an operation from the cloud portal (for
    example a VNET creation), the controller allocates the resources, placement
-   management, capacity, etc. via the NorthBound interface APIs.
+   management, capacity, etc. via the **NorthBound** interface DASH API.
 
 2. **gNMI container**. The SDN controller communicates with a DASH device
-   through a **gNMI endpoint** served by a new DASH SDN agent running inside a
-   new SONiC **gNMI container**.  
+   through a **gNMI endpoint** served by a DASH SDN agent running inside a
+   new SONiC container the **gNMI container**.  
    1. **gNMI server**. The gNMI schema is closely related to the DASH DB schema
    so in effect, the *gNMI server* is a **thin RPC shim layer** to the DB.
-   1. **Config Backend**. Translates SDN configuration into **confdb** OR
+   1. **Config Backend**. Translates SDN configuration into **confdb** or
       **APPDB** objects.
 
-    The functionality of the new **gNMI container** in the user
-    space is to receive content from the Software Defined Networking (SDN)
-    controller to control the setup for the overlay configurations. 
-    DASH receives the objects, translates them with a **gNMI agent**, 
-    provides them to the *SONiC OrchAgent* for further translation onto the 
-    dataplane via the **SAI database**. 
+    The functionality of the new **gNMI container** in the user space is to
+    receive information objects from the SDN controller to
+    control the setup for the overlay configurations. Upon receiving these objects, 
+    DASH *translates* them using the **gNMI agent** and provides them to the *SONiC
+    orchagent* for further translation into the dataplane via the **SAI
+    database**. 
 
-3. **Switch State Service (SWSS) container** **DASH underlay** has a small
+3. **SWSS container**. The Switch State Service (SWSS) has a small
    initialization and supports a defined set of **SAI APIs**.
-   1. **DASH orchestration agent (dashorch)**. **DASH Overlay** in the SWSS
+   1. **dashorch**. The DASH orchestration agent provides the **DASH Overlay** in the SWSS
     container that subscribes to the DB objects programmed by the **gNMI
-    agent**. It transforms and translate these objects into ASIC_DB objects,
+    agent**. It transforms and translates these objects into ASIC_DB objects,
     including the new DASH specific SAI objects.
-   2. **DASH orchestration agent (orchagent)**. It writes the state of each
+   2. **orchagent**. The DASH orchestration agent writes the state of each
       tables to STATEDB used by the applications to fetch the programmed status
       of DASH configured objects.
-4. **sync-d container**. Provides **sai api DASH** that uses the orchestration
-  agent ASICDB to allow the technology providers to program the DPU via their
+4. **sync-d container**. Provides **sai api DASH** that allows the hardware providers to program their DPU via their
   SAI implementation. This is a DASH enhanced sync-d that configures the
-  dataplane using the technology supplier-specific SAI library.
+  dataplane using the technology supplier-specific SAI library **asic SDK**.
 
   Both the DASH container and the traditional SONiC application containers sit
   on top of the Switch State services (SWSS) layer, and manipulate the Redis
@@ -89,16 +88,25 @@ are summarized below.
 
 ## Processing pipeline
 
-The processing pipeline must support both IPv4 and IPv6 protocols for both underlay and overlay, unless explicitly stated that some scenario is IPv4-only or IPv6-only. 
+The processing pipeline must support both IPv4 and IPv6 protocols for both
+underlay and overlay, unless explicitly stated that some scenario is IPv4-only
+or IPv6-only. 
 
 ### Elastic Network Interface  
 
-The Elastic Network Interface (ENI), is an independent entity that has a collection of routing policies. ENI has specified identification criteria, which are also used to identify **packet direction**. The current version only supports **mac-address** as ENI identification criteria. 
+The Elastic Network Interface (ENI), is an independent entity that has a
+collection of routing policies. ENI has specified identification criteria, which
+are also used to identify **packet direction**. The current version only
+supports **mac-address** as ENI identification criteria. 
  
-ENI created with identifier Mac1 assumes packets with **destination mac as Mac1 are inbound** and packets with **source mac as Mac2 are outbound**. This direction is used for matching appropriate inbound and outbound policies.  
+ENI created with identifier Mac1 assumes packets with **destination mac as Mac1
+are inbound** and packets with **source mac as Mac2 are outbound**. This
+direction is used for matching appropriate inbound and outbound policies.  
 
-Once a packet arrives on **Inbound** to the target (DPU), it must be forwarded to the correct ENI policy processing pipeline. 
-This ENI selection is done based on the **inner destination MAC** of the packet, which is matched against the MAC of the ENI. 
+Once a packet arrives on **Inbound** to the target (DPU), it must be forwarded
+to the correct ENI policy processing pipeline. This ENI selection is done based
+on the **inner destination MAC** of the packet, which is matched against the MAC
+of the ENI. 
 
 ### Policy processing per ENI
 
@@ -106,12 +114,14 @@ This ENI selection is done based on the **inner destination MAC** of the packet,
 |-------|--------|
 |![packet-pipeline-processing-per-eni-inbound](./images/hld/packet-pipeline-processing-per-eni-inbound.svg)|![packet-pipeline-processing-per-eni-outbound](./images/hld/packet-pipeline-processing-per-eni-outbound.svg)|
 
-- The **inbound pipeline** comprises these steps: `Network --> Routing --> ACLs --> VM`. Packets coming from the Network might be of the following types: 
+- The **inbound pipeline** comprises these steps: `Network --> Routing --> ACLs
+  --> VM`. Packets coming from the Network might be of the following types: 
   - Encapped within VNET traffic (from VM to VM) 
   - Encapped traffic from MUX to VM 
   - Encapped traffic from Device to VM 
   - Direct traffic from infrastructure to VM (ex. Node to VM) (no encap) 
-- The **outbound pipeline** comprises these steps: `VM --> ACLs --> Routing --> Network`. Packet going outside to the Network might be of the following types: 
+- The **outbound pipeline** comprises these steps: `VM --> ACLs --> Routing -->
+  Network`. Packet going outside to the Network might be of the following types: 
   - Direct traffic to Internet (no encap) 
   - Direct traffic to infrastructure (no encap) 
   - Encapped within VNET traffic (from VM to VM) 
@@ -119,7 +129,10 @@ This ENI selection is done based on the **inner destination MAC** of the packet,
 
 ### Access Control Lists
 
-Access Control Lists (ACLs) must support multiple level/groups and packets must successfully pass through these groups in order to be moved to the **routing** layer. Up to 3 ACL groups are supported in each direction. The order of the ACL groups evaluation is always the same and will not change. See the example below.
+Access Control Lists (ACLs) must support multiple level/groups and packets must
+successfully pass through these groups in order to be moved to the **routing**
+layer. Up to 3 ACL groups are supported in each direction. The order of the ACL
+groups evaluation is always the same and will not change. See the example below.
 
 If there is no flow, the order of evaluation is as follows:
 
@@ -133,54 +146,78 @@ If there is no flow, the order of evaluation is as follows:
 
 **Each ACL group has a distinct set of rules**
 
-ACLs are evaluated in both Inbound and Outbound direction and there are separate ACL groups for Inbound and Outbound. 
+ACLs are evaluated in both Inbound and Outbound direction and there are separate
+ACL groups for Inbound and Outbound. 
 
-ACL evaluation is done in stages, where the Stage1 ACL is evaluated first, if a packet is allowed through Stage1 it is processed by Stage2 ACL and so on. For a packet to be allowed it must be allowed in all 3 Stages or must hit a terminating allow rule. 
+ACL evaluation is done in stages, where the Stage1 ACL is evaluated first, if a
+packet is allowed through Stage1 it is processed by Stage2 ACL and so on. For a
+packet to be allowed it must be allowed in all 3 Stages or must hit a
+terminating allow rule. 
 
-The updating of the ACL Group (`ACLStage`) must be an atomic operation. No partial updates are allowed, as it might lead to security issues in the case of only partial rules being applied. 
+The updating of the ACL Group (`ACLStage`) must be an atomic operation. No
+partial updates are allowed, as it might lead to security issues in the case of
+only partial rules being applied. 
 
 **ACLs must be stateful**
 
 The following isd an example of what it means to be stateful: 
 
-- Customer has **allow** for Outbound traffic (to Internet), but **deny** for Inbound (from Internet) 
-- VM must be able to **initiate traffic outbound** (which will be allowed by the outbound **allow** rule). This should then **automatically create temporary inbound allow rule for that specific flow ONLY to allow Internet to reply back (with SYN-ACK)**. 
-- Internet **must not be able to initiate connection to VM if there is deny Inbound rule**. 
+- Customer has **allow** for Outbound traffic (to Internet), but **deny** for
+  Inbound (from Internet) 
+- VM must be able to **initiate traffic outbound** (which will be allowed by the
+  outbound **allow** rule). This should then **automatically create temporary
+  inbound allow rule for that specific flow ONLY to allow Internet to reply back
+  (with SYN-ACK)**. 
+- Internet **must not be able to initiate connection to VM if there is deny
+  Inbound rule**. 
 
 **Rules evaluation logic**
 
-The end result of the ACL logic for packet evaluation leads to a single outcome: **allow** or **deny**.
+The end result of the ACL logic for packet evaluation leads to a single outcome:
+**allow** or **deny**.
 
-- If the **allow** outcome is reached the **packet is moved to next processing pipeline**. 
+- If the **allow** outcome is reached the **packet is moved to next processing
+  pipeline**. 
 - If the **deny** outcome is reached the **packet is msilently dropped**. 
 
 ACL groups need to be evaluated in order. 
 
-- Each ACL group has a set of rules. Only a single rule can match in group/stage. 
+- Each ACL group has a set of rules. Only a single rule can match in
+  group/stage. 
   - Once the rule is matched, its action is performed (**allow** or **deny**).
-  - The packet porcessing moves to the next ACL group/stage; a match is found, no further rules in same group are evaluated. 
+  - The packet porcessing moves to the next ACL group/stage; a match is found,
+    no further rules in same group are evaluated. 
 
-- Within an ACL group, rules are organized by priority (with lowest priority number being evaluated first). 
+- Within an ACL group, rules are organized by priority (with lowest priority
+  number being evaluated first). 
   - No two rules have the same priority within a group. 
-  - Priority is only within rules in the same group. No priorities across groups are allowed. 
+  - Priority is only within rules in the same group. No priorities across groups
+    are allowed. 
   - A smaller priority number means the rule will be evaluated first.
-  - Priorities are unique withing an ACL group. Priorities might overlap across ACL groups.  
+  - Priorities are unique withing an ACL group. Priorities might overlap across
+    ACL groups.  
 
 **Terminating versus non-terminating rule** 
 
 A rule can be **terminating** or **non-terminating**. 
 
-- **Terminating** rule means that this is the final outcome and further processing through other groups/stages must be skipped. 
+- **Terminating** rule means that this is the final outcome and further
+  processing through other groups/stages must be skipped. 
   - **Deny** rules are usually *terminating*. 
 
-- **Non-terminating** rule means that further processing through other groups/stages is required. 
+- **Non-terminating** rule means that further processing through other
+  groups/stages is required. 
   - **Allow** rules are usually *non-terminating”*. 
-  - **Deny** rules can sometimes be also *non-terminating* (also known as **soft deny**). This means that a particular ACL group *proposes* to deny the packet, but its decision is not final, and can be **overridden**, switched to *allow* by the next group/stage. 
+  - **Deny** rules can sometimes be also *non-terminating* (also known as **soft
+    deny**). This means that a particular ACL group *proposes* to deny the
+    packet, but its decision is not final, and can be **overridden**, switched
+    to *allow* by the next group/stage. 
 
 
 ### Routing 
 
-Routing must be based on the **Longest Prefix Match** (LPM) and must support all **underlay and overlay** combinations: 
+Routing must be based on the **Longest Prefix Match** (LPM) and must support all
+**underlay and overlay** combinations: 
 
 - inner IPv4 packet encapped in outer IPv4 packet 
 - inner IPv4 packet encapped in outer IPv6 packet 
@@ -206,35 +243,41 @@ Routing pipeline must support the routing models shown below.
 1. **Decap** 
    - VXLAN/GRE decap – static rule 
    - VXLAN/GRE decap – based on mapping lookup 
-   - VXLAN/GRE decap – inner packet SRC/DEST IP calculated based on part of outer packet SRC/DEST IP 
+   - VXLAN/GRE decap – inner packet SRC/DEST IP calculated based on part of
+     outer packet SRC/DEST IP 
 1. **Transpositions** 
    - Direct traffic – pass thru with static SNAT/DNAT (IP, IP+Port) 
    - Packet upcasting (IPv4 -> IPv6 packet transformation) 
    - Packet downcasting (IPv6 -> IPv4 packet transformation) 
 1. **Up to 3 level of routing transforms** (example: decap + decap + transpose) 
 
-All routing rules must optionally allow for **stamping** the source MAC (to **enforce Source MAC correctness**), `correct/fix/override source mac`. 
+All routing rules must optionally allow for **stamping** the source MAC (to
+**enforce Source MAC correctness**), `correct/fix/override source mac`. 
 
 **Route rules processing**
 
 **Outbound (LPM)**
 
-Matching is based on destination IP only - using the Longest Prefix Match (LPM) algorithm. 
+Matching is based on destination IP only - using the Longest Prefix Match (LPM)
+algorithm. 
 
-Once the rule is match, the correct set of **transposition, encap** steps must be applied depending on the rule. 
+Once the rule is match, the correct set of **transposition, encap** steps must
+be applied depending on the rule. 
 
 Only one rule will be matched. 
 
 **Inbound (Priority)** 
 
-All inbound rules are matched based on the priority order (with lower priority value rule matched first). 
-Matching is based on multiple fields (or must match if field is populated). The supported fields are: 
+All inbound rules are matched based on the priority order (with lower priority
+value rule matched first). Matching is based on multiple fields (or must match
+if field is populated). The supported fields are: 
 
 - Most Outer Source IP Prefix 
 - Most Outer Destination IP Prefix 
 - VXLAN/GRE key 
 
-Once the rule is match, the correct set of **decap, transposition** steps must be applied depending on the rule. 
+Once the rule is match, the correct set of **decap, transposition** steps must
+be applied depending on the rule. 
 
 Only one rule will be matched. 
 
