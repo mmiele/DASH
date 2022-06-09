@@ -36,7 +36,7 @@ The previous figure shows the SONiC architectural modifications for DASH summiri
       1. A **DASH API** is exposed as **gNMI interface** as part of the *gNMI
    container*, see next point. 
       1. **gNMI client** configures SONiC via `gRPC get/set` calls.
-   
+
    The SDN controller controls the overlay built on top of the physical layer
    (underlay) of the infrastructure. From the point of view of the SDN control
    plane, when a customer creates an operation from the cloud portal (for
@@ -50,6 +50,13 @@ The previous figure shows the SONiC architectural modifications for DASH summiri
    so in effect, the *gNMI server* is a **thin RPC shim layer** to the DB.
    1. **Config Backend**. Translates SDN configuration into **confdb** OR
       **APPDB** objects.
+
+    The functionality of the new **gNMI container** in the user
+    space is to receive content from the Software Defined Networking (SDN)
+    controller to control the setup for the overlay configurations. 
+    DASH receives the objects, translates them with a **gNMI agent**, 
+    provides them to the *SONiC OrchAgent* for further translation onto the 
+    dataplane via the **SAI database**. 
 
 3. **Switch State Service (SWSS) container** **DASH underlay** has a small
    initialization and supports a defined set of **SAI APIs**.
@@ -70,28 +77,8 @@ The previous figure shows the SONiC architectural modifications for DASH summiri
   application-layer DBs; these in turn are translated into SAI dataplane obects
   via the normal SONiC orchestration daemons inside SWSS.
 
-
-
-DASH introduces the following modifications:
-
-1. A *new docker container* in the user space named **gNMI container** (aka SDN
-   container) to create the functional component for DASH. Microsoft will
-   deliver the **gNMI container** as code to SONiC to allow any SONiC switch to
-   talk with and integrate DPU technology. The *DASH container* software
-   integrates with the SONiC system containers seemlessly. Microsoft will ensure
-   a high quality integration with the switch. 
-
-2. In the **sync-d container**, the **sai api DASH** (as opposed to *sai api* in
-   the original SONiC architecture).  
-
-In summary, the functionality of the new **gNMI container** in the user space is
-to receive content from the Software Defined Networking (SDN) controller to
-control setup for the overlay configurations. DASH receives the objects,
-translates them with a **gNMI agent**, provides them to the *SONiC OrchAgent*
-for further translation onto the dataplane via the **SAI database**. The
-*DPU/IPU/SmartNic* device will run a separate instance of SONiC DASH on the
-device.  
-
+> [!NOTE] The *DPU/IPU/SmartNic* device will run a separate instance of SONiC
+> DASH on the device.  
 
 
 ## Packet flow
