@@ -11,16 +11,10 @@ Last update: 06/09/2022
 
 - [SONiC integration](#sonic-integration)
 - [Processing pipeline](#processing-pipeline)
-- [Processing pipeline](#processing-pipeline-1)
   - [Elastic Network Interface](#elastic-network-interface)
   - [Policy processing per ENI](#policy-processing-per-eni)
   - [Access Control Lists](#access-control-lists)
-    - [Rules evaluation logic](#rules-evaluation-logic)
-    - [Terminating versus non-terminating rule](#terminating-versus-non-terminating-rule)
   - [Routing](#routing)
-    - [Outbound](#outbound)
-    - [Inbound](#inbound)
-    - [Route rules processing](#route-rules-processing)
 - [Packet flow](#packet-flow)
 - [References](#references)
 - [Appendix](#appendix)
@@ -95,8 +89,6 @@ are summarized below.
 
 ## Processing pipeline
 
-## Processing pipeline
-
 The processing pipeline must support both IPv4 and IPv6 protocols for both underlay and overlay, unless explicitly stated that some scenario is IPv4-only or IPv6-only. 
 
 ### Elastic Network Interface  
@@ -155,7 +147,7 @@ The following isd an example of what it means to be stateful:
 - VM must be able to **initiate traffic outbound** (which will be allowed by the outbound **allow** rule). This should then **automatically create temporary inbound allow rule for that specific flow ONLY to allow Internet to reply back (with SYN-ACK)**. 
 - Internet **must not be able to initiate connection to VM if there is deny Inbound rule**. 
 
-#### Rules evaluation logic 
+**Rules evaluation logic**
 
 The end result of the ACL logic for packet evaluation leads to a single outcome: **allow** or **deny**.
 
@@ -174,7 +166,7 @@ ACL groups need to be evaluated in order.
   - A smaller priority number means the rule will be evaluated first.
   - Priorities are unique withing an ACL group. Priorities might overlap across ACL groups.  
 
-#### Terminating versus non-terminating rule 
+**Terminating versus non-terminating rule** 
 
 A rule can be **terminating** or **non-terminating**. 
 
@@ -197,7 +189,7 @@ Routing must be based on the **Longest Prefix Match** (LPM) and must support all
 
 Routing pipeline must support the routing models shown below.
 
-#### Outbound 
+**Outbound** 
 
 1. **Transpositions** 
    - Direct traffic – pass thru with static SNAT/DNAT (IP, IP+Port
@@ -209,7 +201,7 @@ Routing pipeline must support the routing models shown below.
    - VXLAN/GRE encap – calculated based on part of SRC/DEST IP of inner packet 
 1. **Up to 3 levels of routing transforms** (example: transpose + encap + encap) 
 
-#### Inbound 
+**Inbound** 
 
 1. **Decap** 
    - VXLAN/GRE decap – static rule 
@@ -223,7 +215,7 @@ Routing pipeline must support the routing models shown below.
 
 All routing rules must optionally allow for **stamping** the source MAC (to **enforce Source MAC correctness**), `correct/fix/override source mac`. 
 
-#### Route rules processing
+**Route rules processing**
 
 **Outbound (LPM)**
 
