@@ -102,7 +102,7 @@ below.
 
 ### Multiple DPUs device
 
-In the case of a multiple DPUs device, like applaince or smart switch, the following applies:
+In the case of a multiple DPUs device, like appliance or smart switch, the following applies:
 
 - Each DPU provides a gNMI endpoint for SDN controller through a unique IP
   address.
