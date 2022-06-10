@@ -18,10 +18,12 @@ Last update: 06/09/2022
   - [Routing](#routing)
 - [Packet flow](#packet-flow)
 - [References](#references)
-- [Appendix](#appendix)
-  - [Packet transforms](#packet-transforms)
 
 This article describes some of DASH key architecturale elements.
+
+> [!NOTE] 
+> This is WIP and to collect information from several sources.
+> The content can be added to existing articles.  
 
 ## SONiC integration
 
@@ -31,9 +33,13 @@ figure below. For more information and details about the integration, see [SONiC
 DASH
 HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-sonic-hld.md). 
 
+> [!NOTE]
+> The content in this section can be added to [SONiC integration](dash-high-level-design.md#sonic-integration) or to 
+> [Module Interaction](dash-sonic-hld.md#3.3-module-interaction)
+
 ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
 
-<figcaption><i>Figure 1 - SONiC components modified by DASH</i></figcaption><br/><br/>
+<figcaption><i>Figure 1 - SONiC components modified by DASH</i></figcaption><br/>
 
 The previous figure shows the SONiC components modified by DASH which are summarized
 below. 
@@ -96,7 +102,7 @@ below.
 
 ### Multiple DPUs device
 
-In the case of a multiple DPUs device the following applies:
+In the case of a multiple DPUs device, like applaince or smart switch, the following applies:
 
 - Each DPU provides a gNMI endpoint for SDN controller through a unique IP
   address.
@@ -117,6 +123,11 @@ In the case of a multiple DPUs device the following applies:
 DASH processing pipeline must support both IPv4 and IPv6 protocols for both
 underlay and overlay, unless explicitly stated that some scenario is IPv4-only
 or IPv6-only. 
+
+> [!NOTE]
+> We cover this content in pieces, but we do not have a coherent flow of information
+> under one *umbrella* as shown here in the **processing pipeline**.
+> The info is obtained from *Sirius API* document and *VNET to VNET* presentation. 
 
 ### Elastic Network Interface  
 
@@ -309,16 +320,11 @@ Only one rule will be matched.
 
 ## Packet flow
 
-<!-- See SONIiC HLD -->
-
-## References
-
-## Appendix
-
-### Packet transforms
-
-Packet transformation plays a crucial role when moving a packet from a source to
-a destination. Let's define a few terms.
+The processing of the packet flow is based on a set of tables stored in the
+dataplane (DPU) and configured based on information sent by the control plane
+(SDN controller). The transformation plays a crucial role when moving a packet
+from a source to a destination. The definitions below apply. For an example all works
+see [VNET to VNET scenario](tbd). 
 
 - **Flow**. It describes a specific *conversation* between two hosts (SRC/DST
   IP, SRC/DST Port). When a flow is processed and policy is applied to it and
@@ -359,4 +365,4 @@ a destination. Let's define a few terms.
 - **Flow table**. A global table on a DPU that contains the transforms for all
   of the per-FNI flows that have been processed through the data path pipeline.
 
-
+## References
