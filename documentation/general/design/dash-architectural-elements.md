@@ -22,7 +22,7 @@ Last update: 06/09/2022
 This article describes some of DASH key architecturale elements.
 
 > [!NOTE] 
-> This is WIP and to collect information from several sources.
+> This is WIP to collect information from several sources.
 > The content can be added to existing articles.  
 
 ## SONiC integration
@@ -35,13 +35,13 @@ HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-s
 
 > [!NOTE]
 > The content in this section can be added to [SONiC integration](dash-high-level-design.md#sonic-integration) or to 
-> [Module Interaction](dash-sonic-hld.md#3.3-module-interaction)
+> [Module Interaction](dash-sonic-hld.md#33-module-interaction).
 
 ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
 
 <figcaption><i>Figure 1 - SONiC components modified by DASH</i></figcaption><br/>
 
-The previous figure shows the SONiC components modified by DASH which are summarized
+The previous figure shows the SONiC components modified by DASH, which are summarized
 below. 
 
 1. **SDN controller**. The Software Defined Networking (SDN) controller is
@@ -320,11 +320,11 @@ Only one rule will be matched.
 
 ## Packet flow
 
-The processing of the packet flow is based on a set of tables stored in the
-dataplane (DPU) and configured based on information sent by the control plane
-(SDN controller). The transformation plays a crucial role when moving a packet
-from a source to a destination. The definitions below apply. For an example all works
-see [VNET to VNET scenario](tbd). 
+The processing of a packet is based on a set of tables stored in the dataplane
+(DPU) and configured based on information sent by the control plane (SDN
+controller). The packet flow, from source to destination, is built on these tables
+in which transform plays a crucial role. The definitions below apply.
+For an example, see [VNET to VNET scenario](tbd). 
 
 - **Flow**. It describes a specific *conversation* between two hosts (SRC/DST
   IP, SRC/DST Port). When a flow is processed and policy is applied to it and
