@@ -29,9 +29,13 @@ This article describes some of DASH key architecturale elements.
 
 DASH relies upon the [SONiC system
 architecture](https://github.com/Azure/SONiC/wiki/Architecture) as shown in the
-figure below. For more information and details about the integration, see [SONiC
+figure below. 
+For more information and details about the integration, see [SONiC
 DASH
 HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-sonic-hld.md). 
+
+We reccomend to read the [SONiC system
+architecture](https://github.com/Azure/SONiC/wiki/Architecture).
 
 > [!NOTE]
 > The content in this section can be added to [SONiC integration](dash-high-level-design.md#sonic-integration) or to 
@@ -85,20 +89,33 @@ below.
     in the SWSS container that subscribes to the DB objects programmed by the
     **gNMI agent**. It transforms and translates these objects into ASIC_DB
     objects, including the new DASH specific SAI objects.
-   1. **orchagent**. The DASH orchestration agent writes the state of each
-      tables to STATEDB used by the applications to fetch the programmed status
-      of DASH configured objects.
+    > [!NOTE]
+    > ASIC_DB stores the necessary state to drive ASIC's configuration and operation. 
+    > Its asic-friendly format eases the interaction between **sync-d** and **asic SDKs**.
+    1. **orchagent**. Its a critical component in the SWSS subsystem. It handles
+      relevant state information and pushes it towards its south-bound interface
+      (ASIC_DB). The orchagent writes the state of each tables to the STATE_DB
+      used by the applications to fetch the programmed status of DASH configured
+      objects.
+      > [!NOTE] STATE_DB: Stores key operational state for entities configured
+      > in the system. This state is used to resolve dependencies between
+      > different SONiC subsystems.  In essence, this DB stores all the state
+      > that is deemed necessary to resolve cross-modular dependencies.
 
 4. **sync-d container**. Provides **sai api DASH** that allows the hardware
   providers to program their DPU via their SAI implementation. This is a DASH
-  enhanced sync-d that configures the dataplane using the technology
-  supplier-specific SAI library **asic SDK**.
+  enhanced sync-d that configures the dataplane using the  hardware
+  providers specific SAI library **asic SDK**.
+  
+  > [!NOTE] The *syncd's container* provides a mechanism to allow the
+  > synchronization of the switch's network state with the switch's actual
+  > hardware/ASIC. This includes the initialization, the configuration and the
+  > collection of the switch's ASIC current status.
 
   Both the DASH container and the traditional SONiC application containers sit
   on top of the Switch State services (SWSS) layer, and manipulate the Redis
   application-layer DBs; these in turn are translated into SAI dataplane obects
   via the normal SONiC orchestration daemons inside SWSS.
-
 
 ### Multiple DPUs device
 
