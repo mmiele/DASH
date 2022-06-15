@@ -28,9 +28,6 @@ For more information and details about the integration, see [SONiC
 DASH
 HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-sonic-hld.md). 
 
-We reccomend to read the [SONiC system
-architecture](https://github.com/Azure/SONiC/wiki/Architecture).
-
 > [!NOTE]
 > The content in this section can be added to [SONiC integration](dash-high-level-design.md#sonic-integration) or to 
 > [Module Interaction](dash-sonic-hld.md#33-module-interaction).
@@ -40,7 +37,8 @@ architecture](https://github.com/Azure/SONiC/wiki/Architecture).
 <figcaption><i>Figure 1 - SONiC components modified by DASH</i></figcaption><br/>
 
 The previous figure shows the SONiC components modified by DASH, which are summarized
-below. 
+below. For more detailed information, we reccomend reading the [SONiC system
+architecture](https://github.com/Azure/SONiC/wiki/Architecture).
 
 1. **SDN controller**. The Software Defined Networking (SDN) controller is
    primarily **responsible for controlling the DASH overlay services**, while
