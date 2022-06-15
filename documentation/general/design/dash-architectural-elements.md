@@ -11,12 +11,6 @@ Last update: 06/09/2022
 
 - [SONiC integration](#sonic-integration)
   - [Multiple DPUs device](#multiple-dpus-device)
-- [Processing pipeline](#processing-pipeline)
-  - [Elastic Network Interface](#elastic-network-interface)
-  - [Policy processing per ENI](#policy-processing-per-eni)
-  - [Access Control Lists](#access-control-lists)
-  - [Routing](#routing)
-- [Packet flow](#packet-flow)
 - [References](#references)
 
 This article describes some of DASH key architecturale elements.
@@ -135,6 +129,7 @@ In the case of a multiple DPUs device, like appliance or smart switch, the follo
 > [!NOTE] Each DPU shall have an instance of SONiC DASH OS that exposes the gNMI
 > APIs to the SDN controller.
 
+<!-- 
 ## Processing pipeline
 
 DASH processing pipeline must support both IPv4 and IPv6 protocols for both
@@ -168,13 +163,12 @@ of the ENI.
 |-------|--------|
 |![packet-pipeline-processing-per-eni-inbound](./images/hld/packet-pipeline-processing-per-eni-inbound.svg)|![packet-pipeline-processing-per-eni-outbound](./images/hld/packet-pipeline-processing-per-eni-outbound.svg)|
 
-- The **inbound pipeline** comprises these steps: `Network --> Routing --> ACLs
-  --> VM`. Packets coming from the Network might be of the following types: 
+- The **inbound pipeline** comprises these steps: `Network -> Routing -> ACLs -> VM`. Packets coming from the Network might be of the following types: 
   - Encapped within VNET traffic (from VM to VM) 
   - Encapped traffic from MUX to VM 
   - Encapped traffic from Device to VM 
   - Direct traffic from infrastructure to VM (ex. Node to VM) (no encap) 
-- The **outbound pipeline** comprises these steps: `VM --> ACLs --> Routing -->
+- The **outbound pipeline** comprises these steps: `VM -> ACLs -> Routing ->
   Network`. Packet going outside to the Network might be of the following types: 
   - Direct traffic to Internet (no encap) 
   - Direct traffic to infrastructure (no encap) 
@@ -381,5 +375,7 @@ For an example, see [VNET to VNET scenario](tbd).
 
 - **Flow table**. A global table on a DPU that contains the transforms for all
   of the per-FNI flows that have been processed through the data path pipeline.
+
+-->
 
 ## References
