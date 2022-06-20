@@ -404,10 +404,8 @@ FPGAs, or some other high-density, performant hardware.
 
 The system architecture for SONiC DASH relies upon the [SONiC system
 architecture](https://github.com/Azure/SONiC/wiki/Architecture). For more
-information and details about the integration, see [SONiC DASH
-HLD](dash-sonic-hld.md/#33-module-interaction). 
-
-
+information and details about the integration, 
+see SONiC-DASH [Module Interaction](dash-sonic-hld.md/#33-module-interaction). 
 
 ### DASH single DPU on NIC
 
