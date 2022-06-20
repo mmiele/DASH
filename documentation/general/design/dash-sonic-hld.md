@@ -1,29 +1,31 @@
 # SONiC-DASH HLD
+
 ## High Level Design Document
+
 ### Rev 0.5
 
 # Table of Contents
 
-  * [Revision](#revision)
+* [Revision](#revision)
 
-  * [About this Manual](#about-this-manual)
+* [About this Manual](#about-this-manual)
 
-  * [Definitions/Abbreviation](#definitionsabbreviation)
- 
-  * [1 Requirements Overview](#1-requirements-overview)
-    * [1.1 Functional requirements](#11-functional-requirements)
-    * [1.2 CLI requirements](#12-cli-requirements)
-    * [1.3 Warm Restart requirements ](#13-warm-restart-requirements)
-    * [1.4 Scaling requirements ](#14-scaling-requirements)
-    * [1.5 Design considerations ](#15-design-considerations)
-  * [2 Packet Flows](#2-packet-flows)
-  * [3 Modules Design](#3-modules-design)
-    * [3.1 Config DB](#31-config-db)
-    * [3.2 Dash DB](#32-dash-app-db)
-    * [3.3 Module Interaction](#33-module-interaction)
-    * [3.4 CLI](#34-cli)
-    * [3.5 Test Plan](#35-test-plan)
-    * [3.6 Example Configuration](#36-example-configuration)
+* [Definitions/Abbreviation](#definitionsabbreviation)
+
+* [1 Requirements Overview](#1-requirements-overview)
+  * [1.1 Functional requirements](#11-functional-requirements)
+  * [1.2 CLI requirements](#12-cli-requirements)
+  * [1.3 Warm Restart requirements](#13-warm-restart-requirements)
+  * [1.4 Scaling requirements](#14-scaling-requirements)
+  * [1.5 Design considerations](#15-design-considerations)
+* [2 Packet Flows](#2-packet-flows)
+* [3 Modules Design](#3-modules-design)
+  * [3.1 Config DB](#31-config-db)
+  * [3.2 Dash DB](#32-dash-app-db)
+  * [3.3 Module Interaction](#33-module-interaction)
+  * [3.4 CLI](#34-cli)
+  * [3.5 Test Plan](#35-test-plan)
+  * [3.6 Example Configuration](#36-example-configuration)
 
 ###### Revision
 
@@ -36,10 +38,13 @@
 | 0.5 | 06/13/2022  |     Chris Sommers  | Schema Relationships              |
 
 # About this Manual
+
 This document provides more detailed design of DASH APIs, DASH orchestration agent, Config and APP DB Schemas and other SONiC buildimage changes required to bring up SONiC image on an appliance card. General DASH HLD can be found at [dash_hld](./dash-high-level-design.md).
 
 # Definitions/Abbreviation
+
 ###### Table 1: Abbreviations
+
 |                          |                                |
 |--------------------------|--------------------------------|
 | DASH                     | Disaggregated APIs for SONiC Hosts |
@@ -56,33 +61,35 @@ This document provides more detailed design of DASH APIs, DASH orchestration age
 
 At a high level the following should be supported:
   
-- Bringup SONiC image for DEVICE_METADATA subtype - `appliance`
-- Bringup Swss/Syncd containers for switch_type - `dpu`
-- Able to program DASH objects configured via gRPC client to appliance card via SAI DASH API
+* Bringup SONiC image for DEVICE_METADATA subtype - `appliance`
+* Bringup Swss/Syncd containers for switch_type - `dpu`
+* Able to program DASH objects configured via gRPC client to appliance card via SAI DASH API
 
   Phase 1
-    - Vnet-Vnet scenario
-    - Route/LPM support
-    - Underlay IPv4 and IPv6
-    - Stateful ACL support
-    - TCP state tracking on flows
-    - Telemetry and Monitoring
+  * Vnet-Vnet scenario
+  * Route/LPM support
+  * Underlay IPv4 and IPv6
+  * Stateful ACL support
+  * TCP state tracking on flows
+  * Telemetry and Monitoring
 
   Phase 2
-    - Private Link
-    - Service Tunnel
-    - Overlay IPv6 
+  * Private Link
+  * Service Tunnel
+  * Overlay IPv6
   
-
 ## 1.2 CLI requirements
+
 Initial support is only for `show` commands
 
-- User should be able to show the DASH configured objects
+* User should be able to show the DASH configured objects
 
 ## 1.3 Warm Restart requirements
+
 Warm-restart support is not considered in Phase 1. TBD
 
 ## 1.4 Scaling requirements
+
 Following are the minimal scaling requirements
 | Item                     | Expected value              |
 |--------------------------|-----------------------------|
@@ -99,44 +106,44 @@ Following are the minimal scaling requirements
 
 DASH Sonic implementation is targeted for appliance scenarios and must handles millions of updates. As such, the implementation is performance and scale focussed as compared to traditional switching and routing based solutions. The following are the design considerations.
 
-1. Implementation must support bulk updates of LPM and CA-PA Mapping tables. 
+1. Implementation must support bulk updates of LPM and CA-PA Mapping tables.
 2. During startup, it is possible to have scaled configurations applied successively. Implementation must support such bulk updates
 3. In normal operation, mapping updates can occur as much as 100 mappings/sec
-4. In normal operation, route updates can occur every 30 sec. 
+4. In normal operation, route updates can occur every 30 sec.
 5. An add or delete of VM translates to updating ENI and routes in bulk context
 6. ACL operations (rules adding/deleting) must be handled atomically and should not have transient drop/forward cases
-7. Implementation must support ability to get all ACL rules/groups based on guid. 
+7. Implementation must support ability to get all ACL rules/groups based on guid.
 8. In normal operation, mappings churn often followed by routes and least for ACLs.
 9. ENIs shall have an admin-state that enables normal connections and forwarding only *after* all configurations for an ENI is applied during initial creation.
 10. During VNET or ENI delete, implementation must support ability to delete all *mappings*, *routes* in a single API call.  
 
 # 2 Packet Flows
-	
+ 
 The following section captures at a high-level on the VNET packet flow. Detailed lookup and pipeline behavior can be referenced *here*.
 
 ## 2.1 Outbound packet processing pipeline
-	
+ 
   ![dash-outbound](./images/dash-hld-outbound-packet-processing-pipeline.svg)
-	
+ 
 Based on the incoming packet's VNI matched against the reserved VNI assigned for VM->Appliance, the pipeline shall set the direction as TX(Outbound) and using the inner src-mac, maps to the corresponding ENI.The incoming packet will always be vxlan encapped and outer dst-ip is the appliance VIP. The pipeline shall parse the VNI, and for VM traffic, the VNI shall be a special reserved VNI. Everything else shall be treated as as network traffic(RX). Pipeline shall use VNI to differentiate the traffic to be VM (Inbound) or Network (Outbound).
 
-In the outbound flow, the appliance shall assume it is the first appliance to apply policy. It applies the outbound ACLs in three stages (VNIC, Subnet and VNET), processed in order, with the outcome being the most restrictive of the three ACLs combined. 
+In the outbound flow, the appliance shall assume it is the first appliance to apply policy. It applies the outbound ACLs in three stages (VNIC, Subnet and VNET), processed in order, with the outcome being the most restrictive of the three ACLs combined.
 
-After the ACL stage, it does LPM routing based on the inner dst-ip and applies the respective action (encap, subsequent CA-PA mapping). Finally, update the connection tracking table for both inbound and outbound. 
-	
+After the ACL stage, it does LPM routing based on the inner dst-ip and applies the respective action (encap, subsequent CA-PA mapping). Finally, update the connection tracking table for both inbound and outbound.
+ 
 ## 2.2 Inbound packet processing pipeline
-	
+ 
    ![dash-inbound](./images/dash-hld-inbound-packet-processing-pipeline.svg)
 
 Based on the incoming packet's VNI, if it does not match against any reserved VNI, the pipeline shall set the direction as RX(Inbound) and using the inner dst-mac, maps to the corresponding ENI. In the inbound flow, Routing (LPM) lookup happens based on VNI and SRC PA prefix and maps to VNET. Using the VNET mapping tables, source PA address is validated against the list of mappings. If the check passes, decap action is performed, else dropped. After LPM is the three stage ACL, processed in order. ACLs can have multiple src/dst IP ranges or port ranges as match criteria.
-	
+ 
 It is worth noting that CA-PA mapping table shall be used for both encap and decap process
-	
+ 
 # 3 Modules Design
 
 The following are the schema changes. The NorthBound APIs shall be defined as sonic-yang in compliance to [yang-guideline](https://github.com/Azure/SONiC/blob/master/doc/mgmt/SONiC_YANG_Model_Guidelines.md)
 
-For DASH objects, the proposal is to use the existing APP_DB instance and objects are prefixed with "DASH". DASH APP_DB objects are preserved only during warmboots and isolated from regular configs that are persistent in the appliance across reboots. All the DASH objects are programmed by SDN and hence treated differently from the existing Sonic L2/L3 'switch' DB ojects. Status of the configured objects shall be reflected in the corresponding STATE_DB entries. 
+For DASH objects, the proposal is to use the existing APP_DB instance and objects are prefixed with "DASH". DASH APP_DB objects are preserved only during warmboots and isolated from regular configs that are persistent in the appliance across reboots. All the DASH objects are programmed by SDN and hence treated differently from the existing Sonic L2/L3 'switch' DB ojects. Status of the configured objects shall be reflected in the corresponding STATE_DB entries.
 
 ## 3.1 Config DB
 
@@ -157,7 +164,7 @@ For DASH objects, the proposal is to use the existing APP_DB instance and object
 
 Following diagram captures the object reference model.
 
-  ![dash-eni-obj-model](./images/dash-hld-eni-objects.svg)   ![dash-vnet-obj-model](./images/dash-hld-vnet-objects.svg) 
+  ![dash-eni-obj-model](./images/dash-hld-eni-objects.svg)   ![dash-vnet-obj-model](./images/dash-hld-vnet-objects.svg)
 
 ### 3.2.1 VNET
   
@@ -179,6 +186,7 @@ DASH_QOS:{{qos_name}}
     "cps": {{cps}}
     "flows": {{flows}}
 ```
+
 ```
 key                      = DASH_QOS:qos_name ; Qos name as key
 ; field                  = value 
@@ -198,6 +206,7 @@ DASH_ENI:{{eni}}
     "admin_state": {{enabled/disabled}}
     "vnet": {{[list of vnets]}}
 ```
+
 ```
 key                      = DASH_ENI:eni ; ENI MAC as key
 ; field                  = value 
@@ -207,12 +216,14 @@ underlay_ip              = PA address for Inbound encapsulation to VM
 admin_state              = Enabled after all configurations are applied. 
 vnet                     = list of Vnets that ENI belongs to
 ```
+
 ### 3.2.4 ACL
   
 ```
 DASH_ACL_IN:{{eni}}:{{stage}}
     "acl_group_id": {{group_id}} 
 ```
+
 ```
 DASH_ACL_OUT:{{eni}}:{{stage}}
     "acl_group_id": {{group_id}} 
@@ -257,7 +268,7 @@ dst_port                 = list of range of destination ports ',' separated
 ```
 
 ### 3.2.5 ROUTING TYPE
-	
+ 
 ```
 DASH_ROUTING_TYPE:{{routing_type}}: [
         "action_name":{{string}}
@@ -277,7 +288,7 @@ vni                      = vni value associated with the corresponding action. A
 ```
 
 ### 3.2.6 APPLIANCE
-	
+ 
 ```
 DASH_APPLIANCE:{{appliance_id}} 
     "sip": {{ip_address}}
@@ -293,7 +304,7 @@ vm_vni                   = list of VNIs that need special treatment. Chosen for 
 
 ### 3.2.7 ROUTE TABLE
 
-``` 
+```
 DASH_ROUTE_TABLE:{{eni}}:{{prefix}} 
     "action_type": {{routing_type}} 
     "vnet":{{vnet_name}} (OPTIONAL)
@@ -320,13 +331,14 @@ metering_bucket          = bucket_id                 ; metering and counter
 
 ### 3.2.8 VNET MAPPING TABLE
 
-``` 
+```
 DASH_VNET_MAPPING_TABLE:{{vnet}}:{{ip_address}} 
     "routing_type": {{routing_type}} 
     "underlay_ip":{{ip_address}}
     "mac_address":{{mac_address}} (OPTIONAL) 
     "metering_bucket": {{bucket_id}}(OPTIONAL)
 ```
+
 ```
 key                      = DASH_VNET_MAPPING_TABLE:vnet:ip_address ; CA-PA mapping table for Vnet
 ; field                  = value 
@@ -338,20 +350,120 @@ metering_bucket          = bucket_id                 ; metering and counter
 
 ## 3.3 Module Interaction
 
-A high-level module interaction is captured in the following diagram.
+> [!NOTE]
+> Could we rename the section **SONiC-DASH integration** ?
 
-  ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
+DASH relies upon the [SONiC system
+architecture](https://github.com/Azure/SONiC/wiki/Architecture) as shown in the
+figure below.
 
+![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
+
+<figcaption><i>SONiC components modified by DASH</i></figcaption><br/>
+
+The previous figure shows the SONiC components modified by DASH, which are summarized
+below. For more detailed information, we reccomend reading the [SONiC system
+architecture](https://github.com/Azure/SONiC/wiki/Architecture).
+
+1. **SDN controller**. The Software Defined Networking (SDN) controller is
+   primarily **responsible for controlling the DASH overlay services**, while
+   the traditional SONiC application containers are used to manage the underlay
+   (L3 routing) and hardware platform.
+      1. **DASH API** is exposed as **gNMI interface** as part of the *gNMI
+   container*, see next point.
+      1. **gNMI client** is used to configure SONiC via `gRPC get/set` calls.
+
+   The SDN controller controls the **overlay** built on top of the **underlay**
+   (physical layer) of the infrastructure. From the point of view of the SDN
+   control plane, when a customer creates an operation from the cloud portal
+   (for example a VNET creation), the controller allocates the resources,
+   placement management, capacity, etc. via the **NorthBound** interface DASH
+   API.
+
+2. **gNMI container**. The SDN controller communicates with a DASH device
+   through a **gNMI endpoint** served by a DASH SDN agent running inside a new
+   SONiC container the **gNMI container**.  
+   1. **gNMI server**. The gNMI schema is closely related to the DASH DB schema
+   so in effect, the *gNMI server* is a **thin RPC shim layer** to the DB.
+   1. **Config Backend**. Translates SDN configuration into **confdb** or
+      **APPDB** objects.
+
+    The functionality of the new **gNMI container** in the user space is to
+    receive information objects from the SDN controller to control the setup for
+    the overlay configurations. Upon receiving these objects, DASH *translates*
+    them using the **gNMI agent** and provides them to the *SONiC orchagent* for
+    further translation into the dataplane via the **SAI database**.
+
+    > [!NOTE] **Microsoft will deliver the gNMI container as code to SONiC** to
+    > allow any SONiC switch to talk with and integrate DPU technology. The
+    > *gNMI container software* integrates with the SONiC system containers
+    > seemlessly. Microsoft will ensure a high quality integration with the
+    > switch.
+
+3. **SWSS container**. The Switch State Service (SWSS) has a small
+   initialization and supports a defined set of **SAI APIs**.
+   1. **dashorch**. The DASH orchestration agent provides the **DASH Overlay**
+    in the SWSS container that subscribes to the DB objects programmed by the
+    **gNMI agent**. It transforms and translates these objects into ASIC_DB
+    objects, including the new DASH specific SAI objects.
+    > [!NOTE]
+    > ASIC_DB stores the necessary state to drive ASIC's configuration and operation.
+    > Its asic-friendly format eases the interaction between **sync-d** and **asic SDKs**.
+    1. **orchagent**. Its a critical component in the SWSS subsystem. It handles
+      relevant state information and pushes it towards its south-bound interface
+      (ASIC_DB). The orchagent writes the state of each tables to the STATE_DB
+      used by the applications to fetch the programmed status of DASH configured
+      objects.
+      > [!NOTE] STATE_DB: Stores key operational state for entities configured
+      > in the system. This state is used to resolve dependencies between
+      > different SONiC subsystems.  In essence, this DB stores all the state
+      > that is deemed necessary to resolve cross-modular dependencies.
+
+4. **sync-d container**. Provides **sai api DASH** that allows the hardware
+  providers to program their DPU via their SAI implementation. This is a DASH
+  enhanced sync-d that configures the dataplane using the  hardware
+  providers specific SAI library **asic SDK**.
+  
+  > [!NOTE] The *syncd's container* provides a mechanism to allow the
+  > synchronization of the switch's network state with the switch's actual
+  > hardware/ASIC. This includes the initialization, the configuration and the
+  > collection of the switch's ASIC current status.
+
+  Both the DASH container and the traditional SONiC application containers sit
+  on top of the Switch State services (SWSS) layer, and manipulate the Redis
+  application-layer DBs; these in turn are translated into SAI dataplane obects
+  via the normal SONiC orchestration daemons inside SWSS.
+
+### Multiple DPUs device
+
+In the case of a multiple DPUs device, like appliance or smart switch, the following applies:
+
+* Each DPU provides a gNMI endpoint for SDN controller through a unique IP
+  address.
+* An appliance or smart switch containing multiple DPUs will contain multiple
+  gNMI endpoints for SDN controller, and the controller treats each DPU as a
+  separate entity.
+* To conserve IPv4 addresses, such an appliance or switch might contain a proxy
+  (NAT) function to map a single IP address:port combination into multiple DPU
+  endpoints with unique IPv4 addresses.
+* No complex logic will run on the switches (switches do not have a top-level
+  view of other/neighboring switches in the infrastructure).
+
+> [!NOTE] Each DPU shall have an instance of SONiC DASH OS that exposes the gNMI
+> APIs to the SDN controller.
 
 ### 3.3.1 DASH Schema Relationships
+
 The [figure below](#schema_relationships) illustrates the various schema and their transformations into the various SONiC layers, including:
+
 * gNMI northbound API, which uses YANG to specify schema
 * Redis APP_DB, which uses [ABNF](https://github.com/Azure/SONiC/blob/master/doc/mgmt/Management%20Framework.md#12-design-overview) schema definition language. Redis objects can be directly manipulated using [SAI-redis](https://github.com/Azure/sonic-sairedis) clients.
 * JSON import/export formats
 * [SAI](https://github.com/Azure/DASH/tree/main/SAI) table and attribute objects
 
 #### Canonical Test Data and schema transformations
-For testing purposes, it is convenient to express test configuartions in a single canonical format, and use this to drive the different API layers to verify correct behavior. A tentative JSON format for representing DASH service configurations is described in https://github.com/Azure/DASH/blob/main/documentation/gnmi/design/dash-reference-config-example.md. Test drivers can accept this input, transform it into different schemas and drive the associated interfaces. For example, a JSON representation of an ACL rule can be transformed into gNMI API calls, SAI-redis calls, SAI-thrift calls, etc.
+
+For testing purposes, it is convenient to express test configuartions in a single canonical format, and use this to drive the different API layers to verify correct behavior. A tentative JSON format for representing DASH service configurations is described in <https://github.com/Azure/DASH/blob/main/documentation/gnmi/design/dash-reference-config-example.md>. Test drivers can accept this input, transform it into different schemas and drive the associated interfaces. For example, a JSON representation of an ACL rule can be transformed into gNMI API calls, SAI-redis calls, SAI-thrift calls, etc.
 
 ### Figure - Schema Relationships
 
@@ -363,29 +475,31 @@ The following containers shall be enabled for sonichost and part of the image. S
   
 | Container/Feature Name   | Is Enabled?     |
 |--------------------------|-----------------|
-|	SNMP | Yes |
-|	Telemetry	| Yes |
-|	LLDP | Yes |
-|	Syncd |	Yes |
-|	Swss | Yes |
-|	Database | Yes |
-|	BGP | Yes |
-|	Teamd	| No |
-|	Pmon | Yes |
-|	Nat | No |
-|	Sflow | No |
-|	DHCP Relay | No |
-|	Radv | No |
-|	Macsec | No |
-|	Resttapi | No |
-|	gNMI | Yes |
+| SNMP | Yes |
+| Telemetry | Yes |
+| LLDP | Yes |
+| Syncd | Yes |
+| Swss | Yes |
+| Database | Yes |
+| BGP | Yes |
+| Teamd | No |
+| Pmon | Yes |
+| Nat | No |
+| Sflow | No |
+| DHCP Relay | No |
+| Radv | No |
+| Macsec | No |
+| Resttapi | No |
+| gNMI | Yes |
 
 ### 3.3.3 DASHOrch (Overlay)
+
 A new orchestration agent "dashorch" shall be implemented that subscribes to DASH APP DB objects and programs the ASIC_DB via the SAI DASH API. DASHOrch shall have sub-orchestrations to handle ACLs, Routes, CA-PA mappings. DASH orchestration agent shall write the state of each tables to STATEDB that applications shall utilize to fetch the programmed status of configured objects.
   
 DASH APIs shall be exposed as gNMI interface and part of the SONiC gNMI container. Clients shall configure the SONiC via gRPC get/set calls. gNMI container has the config backend to translate/write DASH objects to CONFIG_DB and/or DASH APP_DB.
 
 ### 3.3.4 SWSS Lite (Underlay)
+
 SONiC for DASH shall have a lite swss initialization without the heavy-lift of existing switch based orchestration agents that SONiC currently have. The initialization shall be based on switch_type "dpu". For the underlay support, the following SAI APIs are expected to be supported:
   
 | Component                | SAI attribute                                         |
@@ -403,21 +517,21 @@ SONiC for DASH shall have a lite swss initialization without the heavy-lift of e
 |                          | SAI_HOSTIF_TRAP_ATTR_TRAP_PRIORITY |
 |                          | SAI_HOSTIF_TRAP_ATTR_TRAP_TYPE |
 |                          | SAI_HOSTIF_TRAP_GROUP_ATTR_POLICER |
-|                          | SAI_HOSTIF_TRAP_GROUP_ATTR_QUEUE | 
+|                          | SAI_HOSTIF_TRAP_GROUP_ATTR_QUEUE |
 | Neighbor                 | SAI_NEIGHBOR_ENTRY_ATTR_DST_MAC_ADDRESS |
-| Nexthop                  | SAI_NEXT_HOP_ATTR_IP  | 
-|                          | SAI_NEXT_HOP_ATTR_ROUTER_INTERFACE_ID  | 
+| Nexthop                  | SAI_NEXT_HOP_ATTR_IP  |
+|                          | SAI_NEXT_HOP_ATTR_ROUTER_INTERFACE_ID  |
 |                          | SAI_NEXT_HOP_ATTR_TYPE  |
-| Packet                   | SAI_PACKET_ACTION_FORWARD  | 
-|                          | SAI_PACKET_ACTION_TRAP  | 
-|                          | SAI_PACKET_ACTION_DROP  | 
+| Packet                   | SAI_PACKET_ACTION_FORWARD  |
+|                          | SAI_PACKET_ACTION_TRAP  |
+|                          | SAI_PACKET_ACTION_DROP  |
 | Policer                  | SAI_POLICER_ATTR_CBS |
 |                          | SAI_POLICER_ATTR_CIR |
 |                          | SAI_POLICER_ATTR_COLOR_SOURCE |
 |                          | SAI_POLICER_ATTR_GREEN_PACKET_ACTION |
 |                          | SAI_POLICER_ATTR_METER_TYPE |
 |                          | SAI_POLICER_ATTR_MODE |
-|                          | SAI_POLICER_ATTR_PBS  |      
+|                          | SAI_POLICER_ATTR_PBS  |
 |                          | SAI_POLICER_ATTR_PIR  |  
 |                          | SAI_POLICER_ATTR_RED_PACKET_ACTION  |  
 |                          | SAI_POLICER_ATTR_YELLOW_PACKET_ACTION  |  
@@ -462,7 +576,8 @@ SONiC for DASH shall have a lite swss initialization without the heavy-lift of e
 |                          | SAI_SWITCH_ATTR_VXLAN_DEFAULT_ROUTER_MAC |  
 
 ### 3.3.5 Underlay Routing
-DASH Appliance shall establish BGP session with the connected ToR and advertise the prefixes (VIP PA). In turn, the ToR shall advertise default route to appliance. With two ToRs connected, the appliance shall have route with gateway towards both ToRs and does ECMP routing. Orchagent install the route and resolves the neighbor (GW) mac and programs the underlay route/nexthop and neighbor. In the absence of a default-route, appliance shall send the packet back on the same port towards the recieving ToR and can derive the underlay dst mac from the src mac of the received packet or from the neighbor entry (IP/MAC) associated with the port. 
+
+DASH Appliance shall establish BGP session with the connected ToR and advertise the prefixes (VIP PA). In turn, the ToR shall advertise default route to appliance. With two ToRs connected, the appliance shall have route with gateway towards both ToRs and does ECMP routing. Orchagent install the route and resolves the neighbor (GW) mac and programs the underlay route/nexthop and neighbor. In the absence of a default-route, appliance shall send the packet back on the same port towards the recieving ToR and can derive the underlay dst mac from the src mac of the received packet or from the neighbor entry (IP/MAC) associated with the port.
 
 ### 3.3.6 Memory footprints
 
@@ -493,17 +608,17 @@ DASH Appliance shall establish BGP session with the connected ToR and advertise 
 The following commands shall be added :
 
 ```
-	- show dash <eni> routes all
-	- show dash <eni> acls stage <ingress/egress/all>
-	- show dash <vnet> mappings
-	- show dash route-types
-	- show dash qos
-	- show dash vnet brief
+ - show dash <eni> routes all
+ - show dash <eni> acls stage <ingress/egress/all>
+ - show dash <vnet> mappings
+ - show dash route-types
+ - show dash qos
+ - show dash vnet brief
 ```
 
 ## 3.5 Test Plan
 
-Refer DASH documentation for the test plan. 
+Refer DASH documentation for the test plan.
 
 ## 3.6 Example configuration
 
@@ -597,25 +712,25 @@ DASH_VNET_MAPPING_TABLE:Vnet1:10.1.1.1: {
 
 For the example configuration above, the following is a brief explanation of lookup behavior in the outbound direction:
 
-	1. Packet destined to 10.1.1.1:
-		a. LPM lookup hits for entry 10.1.0.0/16
-		b. The action in this case is "vnet" and the routing type for "vnet" is "maprouting"
-		c. Next lookup shall happen on the "mapping" table for Vnet "Vnet1"
-		d. Mapping table for 10.1.1.1 shall be hit and it takes the action "vnet_encap". 
-		e. Encap action shall be performed and use PA address as specified by "underlay_ip"
-	2. Packet destined to 10.1.0.1:
-		a. LPM lookup hits for entry 10.1.0.0/24
-		b. The action in this case is "vnet" and the routing type for "vnet" is "maprouting", with overlay_ip specified
-		c. Next lookup shall happen on the "mapping" table for Vnet "Vnet1", but for overlay_ip 10.0.0.6
-		d. Mapping table for 10.0.0.6 shall be hit and it takes the action "vnet_encap". 
-		e. Encap action shall be performed and use PA address as specified by "underlay_ip"
-	3. Packet destined to 30.0.0.1
-		a. LPM lookup hits for entry 30.0.0.0/16
-		b. The action in this case is "direct". 
-		c. Direct routing happens without any further encapsulation
-	4. Packet destined to 10.2.5.1
-		a. LPM lookup hits for entry 10.2.5.0/24
-		b. The action in this case is "drop". 
-		c. Packets gets dropped
-	
+ 1. Packet destined to 10.1.1.1:
+  a. LPM lookup hits for entry 10.1.0.0/16
+  b. The action in this case is "vnet" and the routing type for "vnet" is "maprouting"
+  c. Next lookup shall happen on the "mapping" table for Vnet "Vnet1"
+  d. Mapping table for 10.1.1.1 shall be hit and it takes the action "vnet_encap". 
+  e. Encap action shall be performed and use PA address as specified by "underlay_ip"
+ 2. Packet destined to 10.1.0.1:
+  a. LPM lookup hits for entry 10.1.0.0/24
+  b. The action in this case is "vnet" and the routing type for "vnet" is "maprouting", with overlay_ip specified
+  c. Next lookup shall happen on the "mapping" table for Vnet "Vnet1", but for overlay_ip 10.0.0.6
+  d. Mapping table for 10.0.0.6 shall be hit and it takes the action "vnet_encap". 
+  e. Encap action shall be performed and use PA address as specified by "underlay_ip"
+ 3. Packet destined to 30.0.0.1
+  a. LPM lookup hits for entry 30.0.0.0/16
+  b. The action in this case is "direct". 
+  c. Direct routing happens without any further encapsulation
+ 4. Packet destined to 10.2.5.1
+  a. LPM lookup hits for entry 10.2.5.0/24
+  b. The action in this case is "drop". 
+  c. Packets gets dropped
+ 
 For the inbound direction, after LPM/ACL lookup, pipeline shall use the "underlay_ip" as specified in the ENI table to Vxlan encapsulate the packet
