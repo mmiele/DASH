@@ -405,49 +405,9 @@ FPGAs, or some other high-density, performant hardware.
 The system architecture for SONiC DASH relies upon the [SONiC system
 architecture](https://github.com/Azure/SONiC/wiki/Architecture). For more
 information and details about the integration, see [SONiC DASH
-HLD](https://github.com/Azure/DASH/blob/main/documentation/general/design/dash-sonic-hld.md). 
+HLD](dash-sonic-hld.md/#33-module-interaction). 
 
-The SONiC DASH integration introduces the following DASH modifications:
 
-1. A *new docker container* in the user space named **gNMI container** (aka SDN
-   container) to create the functional component for DASH. Microsoft will
-   deliver the **gNMI container** as code to SONiC to allow any SONiC switch to
-   talk with and integrate DPU technology. The *DASH container* software
-   integrates with the SONiC system containers seemlessly. Microsoft will ensure
-   a high quality integration with the switch. 
-
-2. In the **sync-d container**, the **sai api DASH** (as opposed to *sai api* in
-   the original SONiC architecture).  
-
-The *DPU/IPU/SmartNic* device will run a separate instance of SONiC DASH on the
-device.  
-
-The component interactions will be executed as a new user space container
-implementation; relying on the existing SONiC infrastructure and components to
-interact as they normally would.  
-
-The functionality of the new *dash container* in the user space is to receive
-content from the Software Defined Networking (SDN) controller to control setup
-for the overlay configurations. DASH receives the objects, translates them with
-a **gNMI agent**, provides them to the *SONiC OrchAgent* for further translation
-onto the dataplane via the **SAI database**.
-
-In particular, notice the following:
-
-- **DASH API** shall be exposed as gNMI interface as part of the DASH container
-  (aka as SDN container).
-- **DASH clients** shall configure SONiC via gRPC get/set calls.
-- **gNMI container** has the config backend to translate/write  DASH objects to
-  CONFDB and/or APPDB.
-- **SWSS** (Underlay) for DASH shall have a small initialization and shall
-  support a defined set of SAI APIs.
-- **DashOrch** (DASH orchestration agent) (Overlay) in the SWSS container
-  subscribes to the DB objects programmed by the DASH agent. These objects are
-  not expected to be programmed to kernel, so orchestration agent writes to
-  ASICDB for the DASH technology provider SAI implementation to finally program
-  the DPU. The DASH orchestration agent shall write the state of each tables to
-  STATEDB used by the applications to fetch the programmed status of DASH
-  configured objects.
 
 ### DASH single DPU on NIC
 

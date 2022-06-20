@@ -359,7 +359,7 @@ figure below.
 
 ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
 
-<figcaption><i>SONiC components modified by DASH</i></figcaption><br/>
+<figcaption><i>SONiC-DASH integration</i></figcaption><br/>
 
 The previous figure shows the SONiC components modified by DASH, which are summarized
 below. For more detailed information, we reccomend reading the [SONiC system
