@@ -118,27 +118,27 @@ DASH Sonic implementation is targeted for appliance scenarios and must handles m
 10. During VNET or ENI delete, implementation must support ability to delete all *mappings*, *routes* in a single API call.  
 
 # 2 Packet Flows
- 
+
 The following section captures at a high-level on the VNET packet flow. Detailed lookup and pipeline behavior can be referenced *here*.
 
 ## 2.1 Outbound packet processing pipeline
- 
+
   ![dash-outbound](./images/dash-hld-outbound-packet-processing-pipeline.svg)
- 
+
 Based on the incoming packet's VNI matched against the reserved VNI assigned for VM->Appliance, the pipeline shall set the direction as TX(Outbound) and using the inner src-mac, maps to the corresponding ENI.The incoming packet will always be vxlan encapped and outer dst-ip is the appliance VIP. The pipeline shall parse the VNI, and for VM traffic, the VNI shall be a special reserved VNI. Everything else shall be treated as as network traffic(RX). Pipeline shall use VNI to differentiate the traffic to be VM (Inbound) or Network (Outbound).
 
 In the outbound flow, the appliance shall assume it is the first appliance to apply policy. It applies the outbound ACLs in three stages (VNIC, Subnet and VNET), processed in order, with the outcome being the most restrictive of the three ACLs combined.
 
 After the ACL stage, it does LPM routing based on the inner dst-ip and applies the respective action (encap, subsequent CA-PA mapping). Finally, update the connection tracking table for both inbound and outbound.
- 
+
 ## 2.2 Inbound packet processing pipeline
- 
+
    ![dash-inbound](./images/dash-hld-inbound-packet-processing-pipeline.svg)
 
 Based on the incoming packet's VNI, if it does not match against any reserved VNI, the pipeline shall set the direction as RX(Inbound) and using the inner dst-mac, maps to the corresponding ENI. In the inbound flow, Routing (LPM) lookup happens based on VNI and SRC PA prefix and maps to VNET. Using the VNET mapping tables, source PA address is validated against the list of mappings. If the check passes, decap action is performed, else dropped. After LPM is the three stage ACL, processed in order. ACLs can have multiple src/dst IP ranges or port ranges as match criteria.
- 
+
 It is worth noting that CA-PA mapping table shall be used for both encap and decap process
- 
+
 # 3 Modules Design
 
 The following are the schema changes. The NorthBound APIs shall be defined as sonic-yang in compliance to [yang-guideline](https://github.com/Azure/SONiC/blob/master/doc/mgmt/SONiC_YANG_Model_Guidelines.md)
@@ -268,7 +268,7 @@ dst_port                 = list of range of destination ports ',' separated
 ```
 
 ### 3.2.5 ROUTING TYPE
- 
+
 ```
 DASH_ROUTING_TYPE:{{routing_type}}: [
         "action_name":{{string}}
@@ -288,7 +288,7 @@ vni                      = vni value associated with the corresponding action. A
 ```
 
 ### 3.2.6 APPLIANCE
- 
+
 ```
 DASH_APPLIANCE:{{appliance_id}} 
     "sip": {{ip_address}}
@@ -359,7 +359,7 @@ figure below.
 
 ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
 
-<figcaption><i>SONiC-DASH integration</i></figcaption><br/><br/> 
+<figcaption><i>SONiC-DASH integration</i></figcaption><br/><br/>
 
 The previous figure shows the SONiC components modified by DASH, which are summarized
 below. For more detailed information, we reccomend reading the [SONiC system
@@ -406,18 +406,18 @@ architecture](https://github.com/Azure/SONiC/wiki/Architecture).
     in the SWSS container that subscribes to the DB objects programmed by the
     **gNMI agent**. It transforms and translates these objects into ASIC_DB
     objects, including the new DASH specific SAI objects.
-    > [!NOTE]
-    > ASIC_DB stores the necessary state to drive ASIC's configuration and operation.
-    > Its asic-friendly format eases the interaction between **sync-d** and **asic SDKs**.
-    1. **orchagent**. Its a critical component in the SWSS subsystem. It handles
+        > [!NOTE] ASIC_DB stores the necessary state to drive ASIC's
+        > configuration and operation. Its asic-friendly format eases the
+        > interaction between **sync-d** and **asic SDKs**.
+   1. **orchagent**. Its a critical component in the SWSS subsystem. It handles
       relevant state information and pushes it towards its south-bound interface
       (ASIC_DB). The orchagent writes the state of each tables to the STATE_DB
       used by the applications to fetch the programmed status of DASH configured
       objects.
-      > [!NOTE] STATE_DB: Stores key operational state for entities configured
-      > in the system. This state is used to resolve dependencies between
-      > different SONiC subsystems.  In essence, this DB stores all the state
-      > that is deemed necessary to resolve cross-modular dependencies.
+        > [!NOTE] STATE_DB: Stores key operational state for entities configured
+        > in the system. This state is used to resolve dependencies between
+        > different SONiC subsystems.  In essence, this DB stores all the state
+        > that is deemed necessary to resolve cross-modular dependencies.
 
 4. **sync-d container**. Provides **sai api DASH** that allows the hardware
   providers to program their DPU via their SAI implementation. This is a DASH
@@ -716,21 +716,21 @@ For the example configuration above, the following is a brief explanation of loo
   a. LPM lookup hits for entry 10.1.0.0/16
   b. The action in this case is "vnet" and the routing type for "vnet" is "maprouting"
   c. Next lookup shall happen on the "mapping" table for Vnet "Vnet1"
-  d. Mapping table for 10.1.1.1 shall be hit and it takes the action "vnet_encap". 
+  d. Mapping table for 10.1.1.1 shall be hit and it takes the action "vnet_encap".
   e. Encap action shall be performed and use PA address as specified by "underlay_ip"
  2. Packet destined to 10.1.0.1:
   a. LPM lookup hits for entry 10.1.0.0/24
   b. The action in this case is "vnet" and the routing type for "vnet" is "maprouting", with overlay_ip specified
   c. Next lookup shall happen on the "mapping" table for Vnet "Vnet1", but for overlay_ip 10.0.0.6
-  d. Mapping table for 10.0.0.6 shall be hit and it takes the action "vnet_encap". 
+  d. Mapping table for 10.0.0.6 shall be hit and it takes the action "vnet_encap".
   e. Encap action shall be performed and use PA address as specified by "underlay_ip"
  3. Packet destined to 30.0.0.1
   a. LPM lookup hits for entry 30.0.0.0/16
-  b. The action in this case is "direct". 
+  b. The action in this case is "direct".
   c. Direct routing happens without any further encapsulation
  4. Packet destined to 10.2.5.1
   a. LPM lookup hits for entry 10.2.5.0/24
-  b. The action in this case is "drop". 
+  b. The action in this case is "drop".
   c. Packets gets dropped
- 
+
 For the inbound direction, after LPM/ACL lookup, pipeline shall use the "underlay_ip" as specified in the ENI table to Vxlan encapsulate the packet
