@@ -406,6 +406,7 @@ architecture](https://github.com/Azure/SONiC/wiki/Architecture).
     in the SWSS container that subscribes to the DB objects programmed by the
     **gNMI agent**. It transforms and translates these objects into ASIC_DB
     objects, including the new DASH specific SAI objects.
+
         > [!NOTE] ASIC_DB stores the necessary state to drive ASIC's
         > configuration and operation. Its asic-friendly format eases the
         > interaction between **sync-d** and **asic SDKs**.
@@ -414,6 +415,7 @@ architecture](https://github.com/Azure/SONiC/wiki/Architecture).
       (ASIC_DB). The orchagent writes the state of each tables to the STATE_DB
       used by the applications to fetch the programmed status of DASH configured
       objects.
+      
         > [!NOTE] STATE_DB: Stores key operational state for entities configured
         > in the system. This state is used to resolve dependencies between
         > different SONiC subsystems.  In essence, this DB stores all the state
