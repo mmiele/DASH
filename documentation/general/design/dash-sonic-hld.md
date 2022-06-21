@@ -1,5 +1,6 @@
 # SONiC-DASH HLD
 
+**Q:** `Could we rename the title "SONiC-DASH integration high level design"?`
 ## High Level Design Document
 
 ### Rev 0.5
@@ -350,7 +351,7 @@ metering_bucket          = bucket_id                 ; metering and counter
 
 ## 3.3 Module Interaction
 
-==Could we rename the section **SONiC-DASH integration**?==
+**Q:** `Could we rename the section "SONiC-DASH integration"?`
 
 DASH relies upon the [SONiC system
 architecture](https://github.com/Azure/SONiC/wiki/Architecture) as shown in the
