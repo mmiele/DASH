@@ -424,10 +424,10 @@ architecture](https://github.com/Azure/SONiC/wiki/Architecture).
   enhanced sync-d that configures the dataplane using the  hardware
   providers specific SAI library **asic SDK**.
   
-  > [!NOTE] The *syncd's container* provides a mechanism to allow the
-  > synchronization of the switch's network state with the switch's actual
-  > hardware/ASIC. This includes the initialization, the configuration and the
-  > collection of the switch's ASIC current status.
+    > [!NOTE] The *syncd's container* provides a mechanism to allow the
+    > synchronization of the switch's network state with the switch's actual
+    > hardware/ASIC. This includes the initialization, the configuration and the
+    > collection of the switch's ASIC current status.
 
   Both the DASH container and the traditional SONiC application containers sit
   on top of the Switch State services (SWSS) layer, and manipulate the Redis
