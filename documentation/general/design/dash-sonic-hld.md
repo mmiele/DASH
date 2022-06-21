@@ -350,7 +350,7 @@ metering_bucket          = bucket_id                 ; metering and counter
 
 ## 3.3 Module Interaction
 
-<span style="background-color: #FFFF00"><b>Could we rename the section **SONiC-DASH integration?</b><span>
+==Could we rename the section **SONiC-DASH integration**?==
 
 DASH relies upon the [SONiC system
 architecture](https://github.com/Azure/SONiC/wiki/Architecture) as shown in the
