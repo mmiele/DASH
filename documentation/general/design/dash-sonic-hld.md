@@ -350,8 +350,7 @@ metering_bucket          = bucket_id                 ; metering and counter
 
 ## 3.3 Module Interaction
 
-> [!NOTE]
-> Could we rename the section **SONiC-DASH integration** ?
+<span style="background-color: #FFFF00"><b>Could we rename the section **SONiC-DASH integration?</b><span>
 
 DASH relies upon the [SONiC system
 architecture](https://github.com/Azure/SONiC/wiki/Architecture) as shown in the
@@ -411,7 +410,7 @@ architecture](https://github.com/Azure/SONiC/wiki/Architecture).
         > configuration and operation. Its asic-friendly format eases the
         > interaction between **sync-d** and **asic SDKs**.
 
-   1. **orchagent**. Its a critical component in the SWSS subsystem. It handles
+   2. **orchagent**. Its a critical component in the SWSS subsystem. It handles
       relevant state information and pushes it towards its south-bound interface
       (ASIC_DB). The orchagent writes the state of each tables to the STATE_DB
       used by the applications to fetch the programmed status of DASH configured
