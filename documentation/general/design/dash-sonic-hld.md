@@ -410,12 +410,13 @@ architecture](https://github.com/Azure/SONiC/wiki/Architecture).
         > [!NOTE] ASIC_DB stores the necessary state to drive ASIC's
         > configuration and operation. Its asic-friendly format eases the
         > interaction between **sync-d** and **asic SDKs**.
+
    1. **orchagent**. Its a critical component in the SWSS subsystem. It handles
       relevant state information and pushes it towards its south-bound interface
       (ASIC_DB). The orchagent writes the state of each tables to the STATE_DB
       used by the applications to fetch the programmed status of DASH configured
       objects.
-      
+
         > [!NOTE] STATE_DB: Stores key operational state for entities configured
         > in the system. This state is used to resolve dependencies between
         > different SONiC subsystems.  In essence, this DB stores all the state
