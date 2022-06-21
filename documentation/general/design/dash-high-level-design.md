@@ -42,7 +42,7 @@ Last update: 05/02/2022
 - [Appendix](#appendix)
   - [A day in the life of a DASH packet](#a-day-in-the-life-of-a-dash-packet)
   - [A day in the life of a DASH SDN controller](#a-day-in-the-life-of-a-dash-sdn-controller)
-  - [A day in the life of a DASH container](#a-day-in-the-life-of-a-dash-container)
+  - [A day in the life of a gNMI container](#a-day-in-the-life-of-a-gnmi-container)
 - [References](#references)
 
 ## Introduction
@@ -335,8 +335,8 @@ In the case of a multiple DPUs device the following applies:
  provide BGP, LLDP, SNMP, etc, etc. These are described thoroughly in the [SONiC
  System
  Architecture](https://github.com/Azure/SONiC/wiki/Architecture#sonic-system-architecture)
- wiki and reproduced in diagram form under the [Detailed
- Architectures](#detailed-architectures) section of this document.
+ wiki and reproduced in diagram form under the [SONiC
+ Integration](#sonic-integration) section of this document.
 
 ### Switch State Service (SWSS)
 
@@ -536,7 +536,7 @@ testing](https://github.com/Azure/DASH/tree/main/test).
 
 ### A day in the life of a DASH packet
 
-> [!NOTE] TBD - Engineering help needed. 
+> [!NOTE] TBD - Engineering help needed. Link to SDN packet pipeline when ready. 
 
 Some of the info from Kristina's *sanitized* doc.
 
@@ -544,7 +544,7 @@ Some of the info from Kristina's *sanitized* doc.
 
 > [!NOTE] TBD - Engineering help needed.
 
-### A day in the life of a DASH container
+### A day in the life of a gNMI container
 
 > [!NOTE] TBD - Engineering help needed.
 
