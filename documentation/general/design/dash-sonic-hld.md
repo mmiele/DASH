@@ -1,6 +1,5 @@
 # SONiC-DASH HLD
 
-**Q:** `Could we rename the title "SONiC-DASH integration high level design"?`
 ## High Level Design Document
 
 ### Rev 0.5
@@ -351,17 +350,17 @@ metering_bucket          = bucket_id                 ; metering and counter
 
 ## 3.3 Module Interaction
 
-**Q:** `Could we rename the section "SONiC-DASH integration"?`
-
 DASH relies upon the [SONiC system
 architecture](https://github.com/Azure/SONiC/wiki/Architecture) as shown in the
 figure below.
 
 ![dash-high-level-diagram](./images/hld/dash-high-level-design.svg)
 
-<figcaption><i>SONiC-DASH integration</i></figcaption><br/><br/>
+<figcaption><i>SONiC-DASH integration</i></figcaption><br/>
 
-The previous figure shows the SONiC components modified by DASH, which are summarized
+### 3.3.1 Brief overview
+
+The previous figure shows the SONiC components modified by DASH, which are described
 below. For more detailed information, we reccomend reading the [SONiC system
 architecture](https://github.com/Azure/SONiC/wiki/Architecture).
 
