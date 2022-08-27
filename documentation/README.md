@@ -11,10 +11,10 @@ See also DASH [FAQ](https://github.com/Azure/DASH/wiki/FAQ) and [Glossary](https
 ## Baseline Specifications and Requirements
 All DASH devices shall conform to the following design specifications and compliance requirements:
 
-| Topic   | Links to Folders |
+| Area   | Description |
 | ------- | ---------|
 | General Architecture and Requirements| [Parent Folder](general/README.md) \| [ Design](general/design/README.md) \| [Compliance Requirements](general/requirements/README.md)|
-| Data plane                           | [Parent Folder](dataplane/README.md) \| [ Design](dataplane/design/README.md) \| [Compliance Requirements](dataplane/requirements/README.md)|
+| [Data plane](dataplane/README.md) |Contains DASH data plane design and requirements documents.|  
 | High-Availability (HA)                                                    | [Parent Folder](high-avail/README.md) \| [ Design](high-avail/design/README.md) \| [Compliance Requirements](high-avail/requirements/README.md)|
 | gNMI Northbound API                  | [Parent Folder](gnmi/README.md) \| [ Design](gnmi/design/README.md) \| [Compliance Requirements](gnmi/requirements/README.md)|
 | SAI Southbound API                   | [Parent Folder](sai/README.md) \| [ Design](sai/design/README.md) \| [Compliance Requirements](sai/requirements/README.md)|
