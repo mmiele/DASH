@@ -5,7 +5,15 @@ This folder contains DASH data plane design and requirements documents.
 
 # Contents
 
-| Folder                                                 | Description                                  |
+## Design
+| Document                                               | Description                                  |
 | ------------------------------------------------------ | -------------------------------------------- |
-| [design](design/README.md)                             | DASH Data plane design & architecture documents |
-| [requirements](requirements/README.md)                 | DASH Data plane requirements documents         |
+|[dash-config-schema-json.md](dash-config-schema-json.md)|Configuration schema example (JSON)           | 
+|[dash-update-timing.md](dash-update-timing.md)          |Routing, ACL, Mapping Updates (WIP)           | 
+| | |
+
+
+## Requirements 
+| Document                                               | Description                                  |
+| ------------------------------------------------------ | -------------------------------------------- |
+|||
