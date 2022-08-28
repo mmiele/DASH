@@ -3,8 +3,6 @@
 # DASH Data plane Documents
 This folder contains DASH data plane design and requirements documents.
 
-# Contents
-
 ## Design
 | Document                                               | Description                                  |
 | ------------------------------------------------------ | -------------------------------------------- |

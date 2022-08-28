@@ -1,6 +1,6 @@
 [ [ << Back to DASH top-level Documents](../README.md#contents) ]
 
-# Contents
+# DASH Encryption Gateway Service Documents
 
 This folder contains DASH Encryption Gateway Service design and requirements documents.
 
